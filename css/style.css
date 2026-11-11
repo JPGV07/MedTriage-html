@@ -1,15 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
-  --primary: #005A8D;          /* Azul principal do MedTriage */
-  --primary-hover: #004570;    /* Azul mais escuro para quando passar o mouse */
-  --bg-body: #F4F7F9;          /* Fundo cinza bem claro da página */
-  --bg-surface: #FFFFFF;       /* Fundo branco dos cards */
-  --text-main: #1E293B;        /* Cor do texto principal (quase preto) */
-  --text-muted: #64748B;       /* Cor do texto secundário (cinza) */
-  --border-color: #CBD5E1;     /* Cor das bordas (cinza claro) */
-  --radius: 8px;               /* Arredondamento padrão dos cantos */
+  /* Tema Paciente (Padrão - Azul) */
+  --primary: #005A8D;
+  --primary-hover: #004570;
+  --bg-body: #F4F7F9;
+  --bg-surface: #FFFFFF;
+  --text-main: #1E293B;
+  --text-muted: #64748B;
+  --border-color: #CBD5E1;
+  --radius: 8px;
 }
 
-/* Reset básico para tirar as margens padrão do navegador */
+/* Tema Profissional (Verde) */
+body.theme-professional {
+  --primary: #0F766E;
+  --primary-hover: #0D5D57;
+  --bg-body: #F0FDF4;
+  --border-color: #A7F3D0;
+}
+
+/* Transições suaves */
+body, .login-card, .tab-btn, .btn, input, .brand svg, .first-time-box {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -20,10 +35,9 @@
 body {
   background-color: var(--bg-body);
   color: var(--text-main);
-  -webkit-font-smoothing: antialiased; /* Deixa a fonte mais nítida */
+  -webkit-font-smoothing: antialiased;
 }
 
-/* LAYOUT DA TELA DE LOGIN */
 .login-wrapper {
   min-height: 100vh; 
   display: flex;     
@@ -32,7 +46,6 @@ body {
   padding: 20px;
 }
 
-/* Largura máxima no Desktop */
 .login-card {
   background-color: var(--bg-surface);
   width: 100%;
@@ -40,10 +53,9 @@ body {
   padding: 40px;
   border-radius: 12px;
   border: 1px solid var(--border-color);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* Sombra suave */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
-/* Logo e Cabeçalho */
 .brand {
   display: flex;
   align-items: center;
@@ -70,17 +82,16 @@ body {
   margin-bottom: 32px;
 }
 
-/* ABAS (Paciente / Profissional) */
 .tabs-container {
   display: flex;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
-  overflow: hidden; /* Impede que o fundo azul saia das bordas arredondadas */
+  overflow: hidden;
   margin-bottom: 24px;
 }
 
 .tab-btn {
-  flex: 1; /* Faz os dois botões dividirem o espaço igualmente */
+  flex: 1;
   padding: 12px;
   font-size: 14px;
   font-weight: 600;
@@ -88,16 +99,13 @@ body {
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-/* Quando a aba estiver ativa */
 .tab-btn.active {
   background-color: var(--primary);
   color: white;
 }
 
-/* INPUTS do Texto */
 .input-group {
   display: flex;
   flex-direction: column;
@@ -110,7 +118,6 @@ body {
   font-weight: 600;
 }
 
-/* Necessário para posicionar o ícone do olho dentro */
 .input-wrapper {
   position: relative;
   display: flex;
@@ -124,16 +131,15 @@ body {
   border-radius: var(--radius);
   font-size: 16px;
   outline: none;
-  transition: border 0.2s;
+  background-color: var(--bg-surface);
+  color: var(--text-main);
 }
 
-/* Quando o usuário clica no input */
 .input-wrapper input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(0, 90, 141, 0.1);
 }
 
-/* Ícone dentro do input (Olho) */
 .icon-btn {
   position: absolute;
   right: 16px;
@@ -145,7 +151,6 @@ body {
   align-items: center;
 }
 
-/* BOTÕES E LINKS */
 .forgot-link {
   display: block;
   text-align: right;
@@ -167,7 +172,6 @@ body {
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  transition: all 0.2s;
 }
 
 .btn-primary {
@@ -190,7 +194,6 @@ body {
   background-color: rgba(0, 90, 141, 0.05);
 }
 
-/* BOX "PRIMEIRA VEZ" E RODAPÉ */
 .first-time-box {
   margin-top: 32px;
   padding: 24px;
@@ -212,16 +215,6 @@ body {
   color: var(--text-muted);
 }
 
-/* RESPONSIVIDADE (Mobile) */
-@media (max-width: 480px) {
-  .login-card {
-    padding: 24px; /* Diminui o espaçamento interno em telas pequenas */
-  }
-  .title {
-    font-size: 24px;
-  }
-}
-/* Link de voltar para o login */
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -231,21 +224,14 @@ body {
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 24px;
-  transition: opacity 0.2s;
 }
 
-.back-link:hover {
-  opacity: 0.7;
-}
-
-/* Texto pequeno abaixo dos inputs */
 .helper-text {
   font-size: 12px;
   color: var(--text-muted);
-  margin-top: -4px; /* Puxa um pouco para perto do input */
+  margin-top: -4px;
 }
 
-/* Área do checkbox de termos */
 .checkbox-group {
   display: flex;
   align-items: center;
@@ -256,7 +242,7 @@ body {
 .checkbox-group input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: var(--primary); /* Pinta o checkbox com a cor do sistema */
+  accent-color: var(--primary);
   cursor: pointer;
 }
 
@@ -265,4 +251,9 @@ body {
   font-weight: 400;
   color: var(--text-main);
   cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .login-card { padding: 24px; }
+  .title { font-size: 24px; }
 }
