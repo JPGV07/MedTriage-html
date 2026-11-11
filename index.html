@@ -1,87 +1,98 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - MedTriage</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+const { JSDOM } = require('jsdom');
+const fs = require('fs');
+const path = require('path');
 
-  <div class="login-wrapper">
-    
-    <!-- CARD DE LOGIN: A caixa branca onde ficam os formulários -->
-    <div class="login-card">
-      
-      <!-- CABEÇALHO -->
-      <div class="brand">
-        <!-- Logo feito com SVG para ficar nítido em qualquer tela -->
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="2" y="2" width="20" height="20" rx="4" fill="#005A8D"/>
-          <path d="M12 6V18M6 12H18" stroke="white" stroke-width="3" stroke-linecap="round"/>
-        </svg>
-        <span>MedTriage</span>
-      </div>
+// Carrega o código do seu main.js para ser testado
+const mainJsCode = fs.readFileSync(path.resolve(__dirname, '../js/main.js'), 'utf8');
 
-      <h1 class="title">Bem-vindo ao MedTriage</h1>
-      <p class="subtitle">Entre para cuidar da sua saúde.</p>
-
-      <!-- ABAS (Sou Paciente / Sou Profissional) -->
-      <!-- O container das abas tem uma borda e os botões dentro dele -->
+describe('Tela de Login - MedTriage', () => {
+  
+  // Função auxiliar para preparar o HTML e o JS antes de cada teste
+  function setupDOM() {
+    // 🟢 ARRANGE (Preparação base para todos os testes)
+    // Criamos um HTML falso com os mesmos IDs do index.html
+    const dom = new JSDOM(`
       <div class="tabs-container">
-        <!-- A classe "active" deixa o botão azul com texto branco -->
-        <button class="tab-btn active" id="btn-paciente" type="button">Sou paciente</button>
-        <button class="tab-btn" id="btn-profissional" type="button">Sou profissional</button>
+        <button class="tab-btn active" id="btn-paciente">Sou paciente</button>
+        <button class="tab-btn" id="btn-profissional">Sou profissional</button>
       </div>
-
-      <!-- FORMULÁRIO DE LOGIN -->
       <form id="login-form">
-        
-        <!-- Campo de CPF -->
-        <div class="input-group">
-          <label for="cpf">CPF</label>
-          <div class="input-wrapper">
-            <input type="text" id="cpf" placeholder="000.000.000-00" required>
-          </div>
-        </div>
-
-        <!-- Campo de Senha com o ícone de olho -->
-        <div class="input-group">
-          <label for="senha">Senha</label>
-          <div class="input-wrapper">
-            <input type="password" id="senha" placeholder="Digite sua senha" required>
-            
-            <!-- Botão do "olhinho" para mostrar/ocultar a senha -->
-            <button type="button" class="icon-btn" id="toggle-senha" aria-label="Mostrar senha">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Link "Esqueci minha senha" alinhado à direita -->
-        <a href="#" class="forgot-link">Esqueci minha senha</a>
-
-        <!-- Botão Principal de Entrar -->
-        <button type="submit" class="btn btn-primary">Entrar</button>
+        <input type="password" id="senha" />
+        <button type="button" id="toggle-senha"></button>
+        <button type="submit">Entrar</button>
       </form>
+    `, { runScripts: "dangerously" });
+    
+    const { window } = dom;
+    
+    // Executa o seu main.js no ambiente simulado
+    const scriptElement = window.document.createElement("script");
+    scriptElement.textContent = mainJsCode;
+    window.document.body.appendChild(scriptElement);
 
-      <!-- BOX "PRIMEIRA VEZ AQUI?" -->
-      <div class="first-time-box">
-        <p>Primeira vez aqui?</p>
-        <!-- Link estilizado como botão vazado -->
-        <a href="cadastro.html" class="btn btn-outline">Criar meu acesso</a>
-      </div>
+    // Dispara o evento "DOMContentLoaded" para o seu script rodar
+    window.document.dispatchEvent(new window.Event('DOMContentLoaded'));
 
-      <!-- Texto de ajuda no rodapé -->
-      <p class="help-text">Precisa de ajuda? Ligue [TELEFONE]</p>
+    return window;
+  }
 
-    </div>
-  </div>
+  // TESTE 1: O botão do olho deve mostrar/ocultar a senha
 
-  <!-- Importa o arquivo de interações JavaScript -->
-  <script src="js/main.js"></script>
-</body>
-</html>
+  test('Deve alternar a visibilidade da senha ao clicar no olho', () => {
+    // ARRANGE
+    const window = setupDOM();
+    const inputSenha = window.document.getElementById('senha');
+    const btnToggle = window.document.getElementById('toggle-senha');
+
+    // ACT (Ação 1: Clicar para mostrar)
+    btnToggle.click();
+
+    // ASSERT (Verificação 1: Deve ser texto visível)
+    expect(inputSenha.type).toBe('text');
+
+    // ACT (Ação 2: Clicar novamente para esconder)
+    btnToggle.click();
+
+    // ASSERT (Verificação 2: Deve voltar a ser senha oculta)
+    expect(inputSenha.type).toBe('password');
+  });
+
+
+  // TESTE 2: As abas devem trocar a classe "active"
+
+  test('Deve trocar a aba ativa ao clicar em "Sou profissional"', () => {
+    // ARRANGE
+    const window = setupDOM();
+    const btnPaciente = window.document.getElementById('btn-paciente');
+    const btnProfissional = window.document.getElementById('btn-profissional');
+
+    // ASSERT (Estado inicial: Paciente está ativo)
+    expect(btnPaciente.classList.contains('active')).toBe(true);
+    expect(btnProfissional.classList.contains('active')).toBe(false);
+
+    // ACT (Clicar na aba de profissional)
+    btnProfissional.click();
+
+    // ASSERT (O profissional deve ficar ativo e o paciente inativo)
+    expect(btnProfissional.classList.contains('active')).toBe(true);
+    expect(btnPaciente.classList.contains('active')).toBe(false);
+  });
+
+  // TESTE 3: O formulário deve impedir o recarregamento
+  test('Deve impedir o envio padrão do formulário ao clicar em Entrar', () => {
+    // ARRANGE
+    const window = setupDOM();
+    const form = window.document.getElementById('login-form');
+    
+    // Criamos um evento de submit falso e verificamos se o preventDefault foi chamado
+    const event = new window.Event('submit', { cancelable: true });
+    const preventDefaultSpy = jest.spyOn(event, 'preventDefault');
+    
+    // ACT
+    form.dispatchEvent(event);
+
+    // ASSERT
+    expect(preventDefaultSpy).toHaveBeenCalled();
+  });
+
+});

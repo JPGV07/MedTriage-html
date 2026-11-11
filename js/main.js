@@ -60,4 +60,22 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Login simulado com sucesso! (Aqui conectaria no Backend)");
     });
   }
+  // js/main.js
+
+//teste
+function validarCPF(cpf) {
+  // Remove pontos e traços
+  const cpfLimpo = cpf.replace(/\D/g, '');
+  
+  // Verifica se tem 11 dígitos
+  if (cpfLimpo.length !== 11) {
+    return false;
+  }
+  return true;
+}
+
+// Exporta a função para o Jest conseguir importar
+if (typeof module !== 'undefined') {
+  module.exports = { validarCPF };
+}
 });
