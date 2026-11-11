@@ -1,12 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - MedTriage</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>MedTriage login</h1>
+
+  <div class="login-wrapper">
     
+    // cARD DE LOGIN: A caixa branca onde ficam os formulários 
+    <div class="login-card">
+      
+      //CABEÇALHO
+      <div class="brand">
+        // Logo feito com SVG para ficar nítido em qualquer tela
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="20" height="20" rx="4" fill="#005A8D"/>
+          <path d="M12 6V18M6 12H18" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <span>MedTriage</span>
+      </div>
+
+      <h1 class="title">Bem-vindo ao MedTriage</h1>
+      <p class="subtitle">Entre para cuidar da sua saúde.</p>
+           ABAS (Sou Paciente / Sou Profissional)
+      //O container das abas tem uma borda e os botões dentro dele
+      <div class="tabs-container">
+        <!-- A classe "active" deixa o botão azul com texto branco -->
+        <button class="tab-btn active" id="btn-paciente" type="button">Sou paciente</button>
+        <button class="tab-btn" id="btn-profissional" type="button">Sou profissional</button>
+      </div>
+           //FORMULÁRIO DE LOGIN
+      <form id="login-form">
+        
+        //Campo de CPF
+        <div class="input-group">
+          <label for="cpf">CPF</label>
+          <div class="input-wrapper">
+            <input type="text" id="cpf" placeholder="000.000.000-00" required>
+          </div>
+        </div>
+
+         //Campo de Senha com o ícone de olho
+        <div class="input-group">
+          <label for="senha">Senha</label>
+          <div class="input-wrapper">
+            <input type="password" id="senha" placeholder="Digite sua senha" required>
+            
+            //Botão do "olhinho" para mostrar/ocultar a senha 
+            <button type="button" class="icon-btn" id="toggle-senha" aria-label="Mostrar senha">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        //Link "Esqueci minha senha" alinhado à direita
+        <a href="#" class="forgot-link">Esqueci minha senha</a>
+
+        //Botão Principal de Entrar
+        <button type="submit" class="btn btn-primary">Entrar</button>
+      </form>
+           //BOX "PRIMEIRA VEZ AQUI?
+      <div class="first-time-box">
+        <p>Primeira vez aqui?</p>
+        //Link estilizado como botão vazado
+        <a href="cadastro.html" class="btn btn-outline">Criar meu acesso</a>
+      </div>
+
+      // Texto de ajuda no rodapé
+      <p class="help-text">Precisa de ajuda? Ligue [TELEFONE]</p>
+
+    </div>
+  </div>
+//Importa o arquivo de interações JavaScript
+  <script src="js/main.js"></script>
 </body>
 </html>
