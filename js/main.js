@@ -82,4 +82,87 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Login simulado com sucesso! (Aqui conectaria no Backend)");
     });
   }
+  // LÓGICA DA TELA DE CADASTRO
+  
+  // Mostrar/Ocultar Senha (Agora temos dois botões de olho na tela)
+  const togglePasswordBtns = document.querySelectorAll(".toggle-password");
+  
+  togglePasswordBtns.forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      // Pega o input que está logo antes do botão clicado
+      const input = e.currentTarget.previousElementSibling;
+      
+      if (input.type === "password") {
+        input.type = "text";
+        e.currentTarget.style.opacity = "1"; 
+      } else {
+        input.type = "password";
+        e.currentTarget.style.opacity = "0.6";
+      }
+    });
+  });
+
+  //Máscara de CPF 
+  const inputCpfCadastro = document.getElementById("cpf-cadastro");
+  if (inputCpfCadastro) {
+    inputCpfCadastro.addEventListener("input", function (e) {
+      let valor = e.target.value.replace(/\D/g, "").substring(0, 11);
+      valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+      valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+      valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+      e.target.value = valor;
+    });
+  }
+  // Validação do Formulário de Cadastro
+  const formCadastro = document.getElementById("cadastro-form");
+  const novaSenha = document.getElementById("nova-senha");
+  const repetirSenha = document.getElementById("repetir-senha");
+  const emailCadastro = document.getElementById("email-cadastro"); // <-- ESSA LINHA ESTAVA FALTANDO
+
+  if (formCadastro) {
+    formCadastro.addEventListener("submit", (e) => {
+      e.preventDefault(); 
+
+      //Cheque: As senhas batem?
+      if (novaSenha.value !== repetirSenha.value) {
+        alert("Erro: As senhas não coincidem!");
+        repetirSenha.focus();
+        return; // Para a execução e não cria a conta
+      }
+
+      // Cheque: A senha tem o tamanho mínimo?
+      if (novaSenha.value.length < 6) {
+        alert("Erro: A senha precisa ter pelo menos 6 caracteres.");
+        novaSenha.focus();
+        return;
+      }
+      //Cheque: O e-mail é válido? (Só valida se o campo não estiver vazio)
+      if (emailCadastro.value.trim() !== "") {
+        // Regex que exige texto + @ + texto + . + texto
+        const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (!regexEmail.test(emailCadastro.value.trim())) {
+          alert("Erro: Por favor, insira um e-mail válido (ex: nome@dominio.com).");
+          
+          // Deixa a borda vermelha para aviso visual
+          emailCadastro.style.borderColor = "#EF4444"; 
+          emailCadastro.focus();
+          return; // Trava o cadastro aqui
+        } else {
+          // Se o e-mail for válido, limpa a borda vermelha
+          emailCadastro.style.borderColor = "var(--border-color)";
+        }
+      }
+      // Se passar por todos os testes:
+      alert("Conta criada com sucesso! (Simulação)");
+      window.location.href = "index.html"; 
+    });
+
+    // Limpa o aviso vermelho assim que o usuário voltar a digitar
+    if (emailCadastro) {
+      emailCadastro.addEventListener("input", () => {
+        emailCadastro.style.borderColor = "var(--border-color)";
+      });
+    }
+  }
 });

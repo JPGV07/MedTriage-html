@@ -221,3 +221,48 @@ body {
     font-size: 24px;
   }
 }
+/* Link de voltar para o login */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  transition: opacity 0.2s;
+}
+
+.back-link:hover {
+  opacity: 0.7;
+}
+
+/* Texto pequeno abaixo dos inputs */
+.helper-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: -4px; /* Puxa um pouco para perto do input */
+}
+
+/* Área do checkbox de termos */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 24px 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary); /* Pinta o checkbox com a cor do sistema */
+  cursor: pointer;
+}
+
+.checkbox-group label {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-main);
+  cursor: pointer;
+}
