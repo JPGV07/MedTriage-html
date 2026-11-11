@@ -1,9 +1,31 @@
 document.addEventListener("DOMContentLoaded", () => {
   
-  // 1. LÓGICA DO OLHO (Mostrar/Ocultar Senha)
+  //LÓGICA DO OLHO (Mostrar/Ocultar Senha)
   // Pega os elementos do HTML usando seus IDs
   const btnToggleSenha = document.getElementById("toggle-senha");
   const inputSenha = document.getElementById("senha");
+  // MÁSCARA E BLOQUEIO DE LETRAS NO CPF
+  const inputCpf = document.getElementById("cpf");
+
+  if (inputCpf) {
+    inputCpf.addEventListener("input", function (e) {
+      //Pega o valor que o usuário digitou
+      let valor = e.target.value;
+      // A MÁGICA: A regex /\D/g substitui TUDO que NÃO for número (\D) por vazio ("")
+      valor = valor.replace(/\D/g, "");
+      // Limita o CPF a no máximo 11 números
+      valor = valor.substring(0, 11);
+      // Aplica a máscara visual (000.000.000-00)
+      // Coloca o primeiro ponto
+      valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+      // Coloca o segundo ponto
+      valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+      // Coloca o traço
+      valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+      // Devolve o valor formatado para o input
+      e.target.value = valor;
+    });
+  }
 
   // Verifica se os elementos existem na página para evitar erros
   if (btnToggleSenha && inputSenha) {
@@ -52,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  //IMPEDIR ENVIO DO FORM (Apenas visual)
+  //IMPEDIR ENVIO DO FORM 
   const loginForm = document.getElementById("login-form");
   if (loginForm) {
     loginForm.addEventListener("submit", (evento) => {
@@ -60,22 +82,4 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Login simulado com sucesso! (Aqui conectaria no Backend)");
     });
   }
-  // js/main.js
-
-//teste
-function validarCPF(cpf) {
-  // Remove pontos e traços
-  const cpfLimpo = cpf.replace(/\D/g, '');
-  
-  // Verifica se tem 11 dígitos
-  if (cpfLimpo.length !== 11) {
-    return false;
-  }
-  return true;
-}
-
-// Exporta a função para o Jest conseguir importar
-if (typeof module !== 'undefined') {
-  module.exports = { validarCPF };
-}
 });
