@@ -257,3 +257,199 @@ body {
   .login-card { padding: 24px; }
   .title { font-size: 24px; }
 }
+/*PACIENRTE*\
+/* Estilos do Dashboard do Paciente */
+.patient-header {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  padding: 16px 0;
+}
+
+.patient-header-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.patient-nav {
+  display: flex;
+  gap: 24px;
+}
+
+.patient-nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding-bottom: 4px;
+  transition: color 0.2s;
+}
+
+.patient-nav a:hover {
+  color: var(--primary);
+}
+
+.patient-nav a.active {
+  color: var(--text-main);
+  font-weight: 600;
+  border-bottom: 2px solid var(--primary);
+}
+
+.patient-user-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+}
+
+/* Conteúdo Principal do Dashboard */
+.dashboard-main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+
+.welcome-section {
+  margin-bottom: 32px;
+}
+
+.welcome-section h1 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.welcome-section p {
+  color: var(--text-muted);
+  font-size: 15px;
+}
+
+/* Card Próxima Consulta */
+.next-appointment-card {
+  background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+  border: 1px solid #7DD3FC;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.next-appointment-card.empty-state {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.appointment-info h2 {
+  font-size: 18px;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.appointment-info p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.badge-waiting {
+  display: inline-block;
+  background-color: #FEF3C7;
+  color: #B45309;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* Grid de Atalhos */
+.section-title {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: var(--text-main);
+}
+
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.shortcut-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.shortcut-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.shortcut-icon {
+  width: 48px;
+  height: 48px;
+  background-color: #F0F9FF;
+  color: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.shortcut-card h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.shortcut-card p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.shortcut-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.shortcut-link:hover {
+  text-decoration: underline;
+}
+
+/* Responsividade Mobile */
+@media (max-width: 768px) {
+  .patient-header-container {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .patient-nav {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .next-appointment-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .next-appointment-card .btn {
+    width: 100%;
+  }
+}

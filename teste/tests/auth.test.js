@@ -3,7 +3,7 @@ const path = require('path');
 const { JSDOM } = require('jsdom');
 const nodeCrypto = require('crypto');
 
-// 1. MOCK DO WEB CRYPTO (JSDOM não tem nativo)
+// Mock do Web Crypto para o JSDOM
 Object.defineProperty(global, 'crypto', {
   value: {
     subtle: {
@@ -14,261 +14,321 @@ Object.defineProperty(global, 'crypto', {
   }
 });
 
-describe('MedTriage - Testes de Integração (Fluxo Completo)', () => {
+describe('MedTriage - Testes de Integração Completos', () => {
   let dom;
   let document;
   let window;
   let mainJs;
 
-  // Carrega o arquivo main.js real do projeto
   beforeAll(() => {
     mainJs = fs.readFileSync(path.join(__dirname, '../js/main.js'), 'utf8');
   });
 
-  // Antes de cada teste, montamos o HTML e o JS no JSDOM
-  beforeEach(() => {
-    // HTML básico que contém todos os IDs usados no seu main.js
-    const html = `
-      <body>
-        <!-- Elementos do Login -->
-        <button id="btn-paciente"></button>
-        <button id="btn-profissional"></button>
-        <label id="label-id"></label>
-        <input id="input-id" />
-        <div class="first-time-box"></div>
-        <form id="login-form">
-          <input type="password" id="senha" />
-          <button type="submit">Entrar</button>
-        </form>
+  // HTML Simulado com TODOS os elementos que o main.js usa
+  const htmlBase = `
+    <body>
+      <!-- Login -->
+      <button id="btn-paciente"></button>
+      <button id="btn-profissional"></button>
+      <label id="label-id"></label>
+      <input id="input-id" />
+      <div class="first-time-box"></div>
+      <form id="login-form">
+        <input type="password" id="senha" />
+        <button type="submit">Entrar</button>
+      </form>
 
-        <!-- Elementos do Cadastro -->
-        <button id="btn-cad-paciente"></button>
-        <button id="btn-cad-profissional"></button>
-        <h1 id="titulo-cadastro"></h1>
-        <p id="subtitulo-cadastro"></p>
-        <label id="label-cadastro-id"></label>
+      <!-- Cadastro -->
+      <form id="cadastro-form">
+        <input id="nome-cadastro" />
         <input id="input-cadastro-id" />
-        <div id="grupo-email"></div>
-        <form id="cadastro-form">
-          <input type="password" id="nova-senha" />
-          <input type="password" id="repetir-senha" />
-          <input type="email" id="email-cadastro" />
-          <button id="btn-submit-cadastro" type="submit"></button>
-        </form>
+        <input type="password" id="nova-senha" />
+        <input type="password" id="repetir-senha" />
+        <input type="email" id="email-cadastro" />
+        <button type="submit">Criar</button>
+      </form>
 
-        <!-- Botões do Olho (classe genérica) -->
-        <div class="input-wrapper">
-          <input type="password" id="senha-teste-olho" />
-          <button class="toggle-password"></button>
-        </div>
-      </body>
-    `;
+      <!-- Dashboard -->
+      <h1 id="welcome-title"></h1>
+      <span id="user-greeting"></span>
+      <h3 id="info-nome"></h3>
+      <span id="info-cpf"></span>
+      <span id="info-email"></span>
+      <button id="btn-logout"></button>
 
-    dom = new JSDOM(html, { url: "http://localhost" });
+      <!-- Olho da senha -->
+      <div class="input-wrapper">
+        <input type="password" id="senha-teste-olho" />
+        <button class="toggle-password"></button>
+      </div>
+    </body>
+  `;
+
+  const setupDOM = () => {
+    dom = new JSDOM(htmlBase, { url: "http://localhost" });
     document = dom.window.document;
     window = dom.window;
-
     global.localStorage = window.localStorage;
     global.alert = jest.fn();
-    
-    // Impede que o JSDOM dê erro ao tentar mudar de página
     delete window.location;
-    window.location = { href: "" };
+    window.location = { href: "", replace: jest.fn() };
+    global.window = window;
 
-    // Executa o nosso main.js dentro desse ambiente simulado
     const script = document.createElement("script");
     script.textContent = mainJs;
     document.body.appendChild(script);
-
-    // Dispara o evento DOMContentLoaded para o código começar a rodar
     document.dispatchEvent(new window.Event('DOMContentLoaded'));
+  };
+
+  beforeEach(() => {
+    localStorage.clear();
+    jest.clearAllMocks();
+    setupDOM();
   });
 
   // ==========================================
-  // TESTES 1: UI / INTERFACE
+  // TESTES DA INTERFACE (UI)
   // ==========================================
-  
-  test('Deve alternar entre Paciente e Profissional no Login e esconder a caixa branca', () => {
-    // 🟢 ARRANGE (Já feito no beforeEach)
-    const btnProfissional = document.getElementById('btn-profissional');
-    
-    // 🔵 ACT
-    btnProfissional.dispatchEvent(new window.Event('click', { bubbles: true }));
-    
-    // 🔴 ASSERT
-    expect(document.body.classList.contains('theme-professional')).toBe(true);
-    expect(document.getElementById('label-id').textContent).toBe('Matrícula');
-    expect(document.querySelector('.first-time-box').style.display).toBe('none');
-  });
+  describe('Interface e Alternância de Perfis', () => {
 
-  test('Deve alternar entre Profissional e Paciente no Cadastro e mostrar o campo E-mail', () => {
-    // 🟢 ARRANGE
-    const btnCadProf = document.getElementById('btn-cad-profissional');
-    const btnCadPac = document.getElementById('btn-cad-paciente');
-    
-    // 🔵 ACT 1
-    btnCadProf.dispatchEvent(new window.Event('click', { bubbles: true }));
-    // 🔴 ASSERT 1
-    expect(document.body.classList.contains('theme-professional')).toBe(true);
-    expect(document.getElementById('grupo-email').style.display).toBe('none');
-    
-    // 🔵 ACT 2
-    btnCadPac.dispatchEvent(new window.Event('click', { bubbles: true }));
-    // 🔴 ASSERT 2
-    expect(document.body.classList.contains('theme-professional')).toBe(false);
-    expect(document.getElementById('grupo-email').style.display).toBe('flex');
-  });
+    test('Deve alternar para profissional: aplicar tema, mudar label e esconder a caixa branca', () => {
+      const btnProfissional = document.getElementById('btn-profissional');
+      btnProfissional.dispatchEvent(new window.Event('click', { bubbles: true }));
 
-  test('Deve aplicar máscara no CPF (Paciente) e remover máscara na Matrícula (Profissional)', () => {
-    // 🟢 ARRANGE
-    const inputId = document.getElementById('input-id');
-    const btnPaciente = document.getElementById('btn-paciente');
-    const btnProfissional = document.getElementById('btn-profissional');
-    
-    // 🔵 ACT 1: Testar CPF
-    btnPaciente.dispatchEvent(new window.Event('click', { bubbles: true }));
-    inputId.value = "12345678901";
-    inputId.dispatchEvent(new window.Event('input', { bubbles: true }));
-    
-    // 🔴 ASSERT 1
-    expect(inputId.value).toBe("123.456.789-01");
+      expect(document.body.classList.contains('theme-professional')).toBe(true);
+      expect(document.getElementById('label-id').textContent).toBe('Matrícula');
+      expect(document.querySelector('.first-time-box').style.display).toBe('none');
+    });
 
-    // 🔵 ACT 2: Testar Matrícula
-    btnProfissional.dispatchEvent(new window.Event('click', { bubbles: true }));
-    inputId.value = "ABC123";
-    inputId.dispatchEvent(new window.Event('input', { bubbles: true }));
-    
-    // 🔴 ASSERT 2
-    expect(inputId.value).toBe("123"); // Remove as letras
-  });
+    test('Deve voltar para paciente: remover tema, voltar label e mostrar a caixa branca', () => {
+      // Vai para profissional
+      document.getElementById('btn-profissional').dispatchEvent(new window.Event('click', { bubbles: true }));
+      
+      // Volta para paciente
+      document.getElementById('btn-paciente').dispatchEvent(new window.Event('click', { bubbles: true }));
 
-  test('Deve mostrar e ocultar a senha ao clicar no olho', () => {
-    // 🟢 ARRANGE
-    const btnOlho = document.querySelector('.toggle-password');
-    const inputSenha = document.getElementById('senha-teste-olho');
-    
-    // 🔵 ACT 1
-    btnOlho.dispatchEvent(new window.Event('click', { bubbles: true }));
-    // 🔴 ASSERT 1
-    expect(inputSenha.type).toBe('text');
-    
-    // 🔵 ACT 2
-    btnOlho.dispatchEvent(new window.Event('click', { bubbles: true }));
-    // 🔴 ASSERT 2
-    expect(inputSenha.type).toBe('password');
+      expect(document.body.classList.contains('theme-professional')).toBe(false);
+      expect(document.getElementById('label-id').textContent).toBe('CPF');
+      expect(document.querySelector('.first-time-box').style.display).toBe('block');
+    });
+
+    test('Deve aplicar máscara de CPF no modo paciente e remover letras no modo profissional', () => {
+      const inputId = document.getElementById('input-id');
+
+      // Modo Paciente
+      document.getElementById('btn-paciente').dispatchEvent(new window.Event('click', { bubbles: true }));
+      inputId.value = "12345678901";
+      inputId.dispatchEvent(new window.Event('input', { bubbles: true }));
+      expect(inputId.value).toBe("123.456.789-01");
+
+      // Modo Profissional
+      document.getElementById('btn-profissional').dispatchEvent(new window.Event('click', { bubbles: true }));
+      inputId.value = "ABC123";
+      inputId.dispatchEvent(new window.Event('input', { bubbles: true }));
+      expect(inputId.value).toBe("123");
+    });
+
+    test('Deve mostrar e ocultar a senha ao clicar no olho', () => {
+      const btnOlho = document.querySelector('.toggle-password');
+      const inputSenha = document.getElementById('senha-teste-olho');
+
+      btnOlho.dispatchEvent(new window.Event('click', { bubbles: true }));
+      expect(inputSenha.type).toBe('text');
+
+      btnOlho.dispatchEvent(new window.Event('click', { bubbles: true }));
+      expect(inputSenha.type).toBe('password');
+    });
   });
 
   // ==========================================
-  // TESTES 2: REGRAS DE NEGÓCIO (CADASTRO)
+  // TESTES DE CADASTRO
   // ==========================================
+  describe('Validações do Cadastro', () => {
 
-  test('Deve bloquear cadastro se as senhas não coincidirem', () => {
-    // 🟢 ARRANGE
-    document.getElementById('btn-cad-paciente').dispatchEvent(new window.Event('click', { bubbles: true }));
-    document.getElementById('input-cadastro-id').value = "123.456.789-00";
-    document.getElementById('nova-senha').value = "senha123";
-    document.getElementById('repetir-senha').value = "senha321";
-    
-    // 🔵 ACT
-    document.getElementById('cadastro-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
-    
-    // 🔴 ASSERT
-    expect(global.alert).toHaveBeenCalledWith("Erro: As senhas não coincidem!");
-  });
+    test('Deve bloquear cadastro se o nome estiver vazio', async () => {
+      document.getElementById('nome-cadastro').value = "";
+      document.getElementById('input-cadastro-id').value = "123.456.789-00";
+      document.getElementById('nova-senha').value = "senha123";
+      document.getElementById('repetir-senha').value = "senha123";
 
-  test('Deve bloquear cadastro se o e-mail for inválido', () => {
-    document.getElementById('btn-cad-paciente').dispatchEvent(new window.Event('click', { bubbles: true }));
-    document.getElementById('input-cadastro-id').value = "123.456.789-00";
-    document.getElementById('nova-senha').value = "senha123";
-    document.getElementById('repetir-senha').value = "senha123";
-    document.getElementById('email-cadastro').value = "email-invalido";
-    
-    document.getElementById('cadastro-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
-    
-    expect(global.alert).toHaveBeenCalledWith("Erro: Insira um e-mail válido.");
-  });
+      document.getElementById('cadastro-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+      await new Promise(process.nextTick);
 
-  test('Deve salvar Paciente com sucesso separando no LocalStorage e criptografando a senha', async () => {
-    // 🟢 ARRANGE
-    document.getElementById('btn-cad-paciente').dispatchEvent(new window.Event('click', { bubbles: true }));
-    document.getElementById('input-cadastro-id').value = "123.456.789-00";
-    document.getElementById('nova-senha').value = "senha123";
-    document.getElementById('repetir-senha').value = "senha123";
-    
-    // 🔵 ACT
-    document.getElementById('cadastro-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
-    
-    // Aguarda a promise do hash resolver (setTimeout para o event loop)
-    await new Promise(process.nextTick);
+      expect(global.alert).toHaveBeenCalledWith("Erro: Insira seu nome completo.");
+    });
 
-    // 🔴 ASSERT
-    const pacientes = JSON.parse(global.localStorage.getItem('@medtriage/pacientes'));
-    const profissionais = global.localStorage.getItem('@medtriage/profissionais');
-    
-    expect(pacientes.length).toBe(1);
-    expect(pacientes[0].id).toBe("123.456.789-00");
-    expect(pacientes[0].senhaHash).not.toBe("senha123"); // Senha não pode ser texto puro
-    expect(pacientes[0].senhaHash.length).toBe(64); // Tamanho do hash SHA-256
-    expect(profissionais).toBeNull(); // Não deve salvar no banco de profissionais
-  });
+    test('Deve bloquear cadastro se as senhas não coincidirem', async () => {
+      document.getElementById('nome-cadastro').value = "Maria da Silva";
+      document.getElementById('input-cadastro-id').value = "123.456.789-00";
+      document.getElementById('nova-senha').value = "senha123";
+      document.getElementById('repetir-senha').value = "senha321";
 
-  test('Deve salvar Profissional com sucesso no LocalStorage correto', async () => {
-    // 🟢 ARRANGE
-    document.getElementById('btn-cad-profissional').dispatchEvent(new window.Event('click', { bubbles: true }));
-    document.getElementById('input-cadastro-id').value = "MED-123";
-    document.getElementById('nova-senha').value = "senha123";
-    document.getElementById('repetir-senha').value = "senha123";
-    
-    // 🔵 ACT
-    document.getElementById('cadastro-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
-    await new Promise(process.nextTick);
+      document.getElementById('cadastro-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+      await new Promise(process.nextTick);
 
-    // 🔴 ASSERT
-    const profissionais = JSON.parse(global.localStorage.getItem('@medtriage/profissionais'));
-    const pacientes = global.localStorage.getItem('@medtriage/pacientes');
-    
-    expect(profissionais.length).toBe(1);
-    expect(profissionais[0].id).toBe("MED-123");
-    expect(pacientes).toBeNull();
+      expect(global.alert).toHaveBeenCalledWith("Erro: As senhas não coincidem!");
+    });
+
+    test('Deve bloquear cadastro se o e-mail for inválido', async () => {
+      document.getElementById('nome-cadastro').value = "Maria";
+      document.getElementById('input-cadastro-id').value = "123.456.789-00";
+      document.getElementById('nova-senha').value = "senha123";
+      document.getElementById('repetir-senha').value = "senha123";
+      document.getElementById('email-cadastro').value = "email_invalido";
+
+      document.getElementById('cadastro-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+      await new Promise(process.nextTick);
+
+      expect(global.alert).toHaveBeenCalledWith("Erro: Insira um e-mail válido.");
+    });
+
+    test('Deve salvar novo paciente com nome, e-mail, senha criptografada e redirecionar para o dashboard', async () => {
+      document.getElementById('nome-cadastro').value = "Maria da Silva";
+      document.getElementById('input-cadastro-id').value = "123.456.789-00";
+      document.getElementById('nova-senha').value = "senha123";
+      document.getElementById('repetir-senha').value = "senha123";
+      document.getElementById('email-cadastro').value = "maria@teste.com";
+
+      document.getElementById('cadastro-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+      await new Promise(process.nextTick);
+
+      const pacientes = JSON.parse(localStorage.getItem('@medtriage/pacientes'));
+      expect(pacientes.length).toBe(1);
+      expect(pacientes[0].nome).toBe("Maria da Silva");
+      expect(pacientes[0].email).toBe("maria@teste.com");
+      expect(pacientes[0].senhaHash).not.toBe("senha123");
+      expect(pacientes[0].senhaHash.length).toBe(64);
+
+      // Verifica login automático
+      const sessao = JSON.parse(localStorage.getItem('@medtriage/sessao'));
+      expect(sessao.id).toBe("123.456.789-00");
+      expect(window.location.href).toBe("paciente_dashboard.html");
+    });
+
+    test('Deve bloquear cadastro com CPF duplicado', async () => {
+      localStorage.setItem('@medtriage/pacientes', JSON.stringify([{ id: "123.456.789-00", nome: "Maria", senhaHash: "abc" }]));
+      
+      document.getElementById('nome-cadastro').value = "Outro Nome";
+      document.getElementById('input-cadastro-id').value = "123.456.789-00";
+      document.getElementById('nova-senha').value = "senha123";
+      document.getElementById('repetir-senha').value = "senha123";
+
+      document.getElementById('cadastro-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+      await new Promise(process.nextTick);
+
+      expect(global.alert).toHaveBeenCalledWith("Erro: Este CPF já possui cadastro.");
+    });
   });
 
   // ==========================================
-  // TESTES 3: REGRAS DE NEGÓCIO (LOGIN)
+  // TESTES DE LOGIN
   // ==========================================
+  describe('Fluxo de Login e Segurança', () => {
 
-  test('Deve autenticar Paciente com credenciais corretas', async () => {
-    // 🟢 ARRANGE
-    // Criamos um hash fake para a senha "senha123"
-    const senhaHashMock = nodeCrypto.createHash('sha256').update("senha123").digest('hex');
-    global.localStorage.setItem('@medtriage/pacientes', JSON.stringify([{ id: "123.456.789-00", senhaHash: senhaHashMock }]));
-    
-    document.getElementById('btn-paciente').dispatchEvent(new window.Event('click', { bubbles: true }));
-    document.getElementById('input-id').value = "123.456.789-00";
-    document.getElementById('senha').value = "senha123";
+    const criarPacienteMock = async () => {
+      const hash = nodeCrypto.createHash('sha256').update("senha123").digest('hex');
+      localStorage.setItem('@medtriage/pacientes', JSON.stringify([
+        { id: "123.456.789-00", nome: "Maria da Silva", senhaHash: hash, email: "maria@teste.com" }
+      ]));
+    };
 
-    // 🔵 ACT
-    document.getElementById('login-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
-    await new Promise(process.nextTick);
+    test('Deve logar com credenciais corretas e redirecionar para o dashboard', async () => {
+      await criarPacienteMock();
+      
+      document.getElementById('input-id').value = "123.456.789-00";
+      document.getElementById('senha').value = "senha123";
 
-    // 🔴 ASSERT
-    expect(global.alert).toHaveBeenCalledWith("Bem-vindo(a)! Login realizado como paciente.");
+      document.getElementById('login-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+      await new Promise(process.nextTick);
+
+      expect(localStorage.getItem('@medtriage/sessao')).not.toBeNull();
+      expect(window.location.href).toBe("paciente_dashboard.html");
+    });
+
+    test('Deve incrementar tentativas ao errar a senha', async () => {
+      await criarPacienteMock();
+      
+      document.getElementById('input-id').value = "123.456.789-00";
+      document.getElementById('senha').value = "senhaerrada";
+
+      document.getElementById('login-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+      await new Promise(process.nextTick);
+
+      expect(localStorage.getItem('@medtriage/tentativas')).toBe("1");
+      expect(global.alert).toHaveBeenCalledWith("Erro: Credenciais inválidas. Você tem 4 tentativas restantes.");
+    });
+
+    test('Deve bloquear após 5 tentativas erradas', async () => {
+      await criarPacienteMock();
+      localStorage.setItem('@medtriage/tentativas', "5");
+      
+      document.getElementById('input-id').value = "123.456.789-00";
+      document.getElementById('senha').value = "senha123";
+
+      document.getElementById('login-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+      await new Promise(process.nextTick);
+
+      expect(global.alert).toHaveBeenCalledWith(
+        expect.stringContaining("Acesso bloqueado")
+      );
+    });
+
+    test('Deve zerar tentativas após login bem-sucedido', async () => {
+      await criarPacienteMock();
+      localStorage.setItem('@medtriage/tentativas', "3");
+      
+      document.getElementById('input-id').value = "123.456.789-00";
+      document.getElementById('senha').value = "senha123";
+
+      document.getElementById('login-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+      await new Promise(process.nextTick);
+
+      expect(localStorage.getItem('@medtriage/tentativas')).toBe("0");
+    });
   });
 
-  test('Deve bloquear login com senha incorreta', async () => {
-    // 🟢 ARRANGE
-    const senhaHashMock = nodeCrypto.createHash('sha256').update("senha123").digest('hex');
-    global.localStorage.setItem('@medtriage/pacientes', JSON.stringify([{ id: "123.456.789-00", senhaHash: senhaHashMock }]));
-    
-    document.getElementById('btn-paciente').dispatchEvent(new window.Event('click', { bubbles: true }));
-    document.getElementById('input-id').value = "123.456.789-00";
-    document.getElementById('senha').value = "senha_errada";
+  // ==========================================
+  // TESTES DO DASHBOARD
+  // ==========================================
+  describe('Dashboard do Paciente', () => {
 
-    // 🔵 ACT
-    document.getElementById('login-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
-    await new Promise(process.nextTick);
+    test('Deve preencher as informações do paciente ao carregar', () => {
+      localStorage.setItem('@medtriage/sessao', JSON.stringify({
+        id: "123.456.789-00",
+        nome: "Maria da Silva",
+        email: "maria@teste.com"
+      }));
 
-    // 🔴 ASSERT
-    expect(global.alert).toHaveBeenCalledWith("Erro: Credenciais inválidas. Certifique-se de que está na aba correta (paciente).");
+      // Recria o DOM para simular o carregamento do dashboard
+      setupDOM();
+
+      expect(document.getElementById('welcome-title').textContent).toBe("Olá, Maria da Silva");
+      expect(document.getElementById('user-greeting').textContent).toBe("Olá, Maria da Silva");
+      expect(document.getElementById('info-nome').textContent).toBe("Maria da Silva");
+      expect(document.getElementById('info-cpf').textContent).toBe("123.456.789-00");
+      expect(document.getElementById('info-email').textContent).toBe("maria@teste.com");
+    });
+
+    test('Deve redirecionar para login se não houver sessão ativa', () => {
+      // Sem sessão no localStorage
+      setupDOM();
+      
+      expect(global.alert).toHaveBeenCalledWith("Acesso negado. Faça login primeiro.");
+      expect(window.location.replace).toHaveBeenCalledWith("index.html");
+    });
+
+    test('Deve limpar sessão e tentativas ao clicar em Sair e redirecionar', () => {
+      localStorage.setItem('@medtriage/sessao', JSON.stringify({ id: "123", nome: "Maria" }));
+      localStorage.setItem('@medtriage/tentativas', "2");
+      
+      setupDOM();
+      
+      const btnLogout = document.getElementById('btn-logout');
+      btnLogout.dispatchEvent(new window.Event('click', { bubbles: true }));
+
+      expect(localStorage.getItem('@medtriage/sessao')).toBeNull();
+      expect(localStorage.getItem('@medtriage/tentativas')).toBeNull();
+      expect(window.location.replace).toHaveBeenCalledWith("index.html");
+    });
   });
-
 });
