@@ -93,7 +93,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     inputId.addEventListener("input", function (e) {
       if (perfilAtivo === "profissional") {
-        e.target.value = e.target.value.replace(/[^0-9]/g, ""); 
+        // CORREÇÃO: Aceita letras e números na matrícula, forçando maiúsculo
+        e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase(); 
         return;
       }
       let valor = e.target.value.replace(/\D/g, "").substring(0, 11);
@@ -138,7 +139,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         localStorage.setItem("@medtriage/tentativas", "0");
         localStorage.setItem("@medtriage/sessao", JSON.stringify(usuarioCadastrado));
         
-        // REDIRECIONAMENTO CORRETO BASEADO NO PERFIL
         if (perfilAtivo === "paciente") {
           window.location.href = "paciente_dashboard.html"; 
         } else {
@@ -224,6 +224,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.body.classList.add("theme-professional");
       labelRecuperar.textContent = "Matrícula";
       inputRecuperar.placeholder = "Digite sua matrícula";
+      
+      inputRecuperar.addEventListener("input", function(e) {
+        e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+      });
     } else {
       labelRecuperar.textContent = "CPF";
       inputRecuperar.placeholder = "000.000.000-00";
