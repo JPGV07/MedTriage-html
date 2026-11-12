@@ -74,9 +74,11 @@ document.addEventListener("DOMContentLoaded", () => {
       e.target.value = valor;
     });
 
+    // SUBMISSÃO DO LOGIN ATUALIZADA
     document.getElementById("login-form").addEventListener("submit", async (e) => {
       e.preventDefault();
 
+      // 1. Verifica bloqueio
       let tentativas = parseInt(localStorage.getItem("@medtriage/tentativas") || "0");
       if (tentativas >= 5) {
         return alert("Acesso bloqueado! Você excedeu o limite de 5 tentativas erradas.");
@@ -87,13 +89,20 @@ document.addEventListener("DOMContentLoaded", () => {
       
       const storageKey = perfilAtivo === "paciente" ? "@medtriage/pacientes" : "@medtriage/profissionais";
       const usuariosSalvos = JSON.parse(localStorage.getItem(storageKey)) || [];
+      
+      // 2. Verifica se o usuário existe (sem contar tentativa)
+      const usuarioCadastrado = usuariosSalvos.find(u => u.id === idDigitado);
+      if (!usuarioCadastrado) {
+        return alert(`Erro: ${perfilAtivo === "paciente" ? "CPF" : "Matrícula"} não encontrado(a). Verifique os dados ou crie uma conta.`);
+      }
+
+      // 3. Verifica a senha (aqui sim conta a tentativa)
       const senhaHash = await hashPassword(senhaDigitada);
-
-      const user = usuariosSalvos.find(u => u.id === idDigitado && u.senhaHash === senhaHash);
-
-      if (user) {
+      
+      if (usuarioCadastrado.senhaHash === senhaHash) {
+        // Acertou
         localStorage.setItem("@medtriage/tentativas", "0");
-        localStorage.setItem("@medtriage/sessao", JSON.stringify(user));
+        localStorage.setItem("@medtriage/sessao", JSON.stringify(usuarioCadastrado));
         
         if (perfilAtivo === "paciente") {
           window.location.href = "paciente_dashboard.html"; 
@@ -101,13 +110,14 @@ document.addEventListener("DOMContentLoaded", () => {
           alert("Área do profissional em construção!");
         }
       } else {
+        // Errou a senha
         tentativas++;
         localStorage.setItem("@medtriage/tentativas", tentativas.toString());
         
         if (tentativas >= 5) {
-          alert("Você errou 5 vezes! O acesso foi bloqueado.");
+          alert("Você errou 5 vezes a senha! O acesso foi bloqueado.");
         } else {
-          alert(`Erro: Credenciais inválidas. Você tem ${5 - tentativas} tentativas restantes.`);
+          alert(`Erro: Senha incorreta. Você tem ${5 - tentativas} tentativas restantes.`);
         }
       }
     });
@@ -168,25 +178,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- LÓGICA DO BOTÃO SAIR (INDEPENDENTE DA PÁGINA) ---
-  // Isso funciona em qualquer página que tenha o botão com id="btn-logout"
+  // --- DASHBOARD E LOGOUT ---
   const btnLogout = document.getElementById("btn-logout");
   if (btnLogout) {
     btnLogout.addEventListener("click", (e) => {
-      e.preventDefault(); // Evita comportamento padrão do botão
-      
-      // Remove a sessão e as tentativas
+      e.preventDefault();
       localStorage.removeItem("@medtriage/sessao");
       localStorage.removeItem("@medtriage/tentativas");
-      
-      // Redireciona e substitui o histórico (impede voltar para o dashboard)
       window.location.replace("index.html");
     });
   }
 
-  // --- TELA DO DASHBOARD (Paciente) ---
   const welcomeTitle = document.getElementById("welcome-title");
-  
   if (welcomeTitle) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     
@@ -198,7 +201,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     welcomeTitle.textContent = `Olá, ${sessao.nome || 'Paciente'}`;
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome || 'Paciente'}`;
-    
     document.getElementById("info-nome").textContent = sessao.nome || "Não informado";
     document.getElementById("info-cpf").textContent = sessao.id;
     document.getElementById("info-email").textContent = sessao.email || "Não informado";
