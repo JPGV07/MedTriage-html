@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscar Especialista - MedTriage</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="patient-header">
+    <div class="patient-header-container">
+      <div class="brand" style="margin-bottom: 0;">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="20" height="20" rx="4" fill="currentColor"/>
+          <path d="M12 6V18M6 12H18" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <span>MedTriage</span>
+      </div>
+
+      <nav class="patient-nav">
+        <a href="paciente_dashboard.html">Início</a>
+        <a href="buscar_especialista.html" class="active">Agendar consulta</a>
+        <a href="#">Histórico de laudos</a>
+      </nav>
+
+      <div class="patient-user-area">
+        <span class="user-greeting" id="user-greeting">Olá, [Nome]</span>
+        <button id="btn-logout" class="btn-outline" style="padding: 8px 16px; width: auto;">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-main">
+    
+    <div class="welcome-section">
+      <h1>Encontre um especialista</h1>
+      <p>Escolha a especialidade e a cidade para ver quem está disponível.</p>
+    </div>
+
+    <!-- Barra de Busca -->
+    <div class="search-box">
+      <div class="input-group">
+        <label for="filtro-especialidade">Especialidade ou doença</label>
+        <select id="filtro-especialidade">
+          <option value="Todas">Todas as especialidades</option>
+          <option value="Oftalmologista">Oftalmologista</option>
+          <option value="Cardiologista">Cardiologista</option>
+          <option value="Dermatologista">Dermatologista</option>
+          <option value="Clínico geral">Clínico geral</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label for="filtro-cidade">Cidade ou região</label>
+        <select id="filtro-cidade">
+          <option value="João Pessoa">João Pessoa</option>
+          <option value="Campina Grande">Campina Grande</option>
+        </select>
+      </div>
+
+      <button id="btn-buscar" class="btn btn-primary">Buscar</button>
+    </div>
+
+    <!-- Título dos resultados -->
+    <h2 class="section-title" id="titulo-resultados" style="margin-top: 32px;">Médicos encontrados</h2>
+
+    <!-- Container onde o JavaScript vai injetar os cards dos médicos -->
+    <div id="lista-medicos" class="doctor-list"></div>
+
+  </main>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -8,7 +8,6 @@
 </head>
 <body>
 
-  <!-- Header do Paciente -->
   <header class="patient-header">
     <div class="patient-header-container">
       
@@ -22,7 +21,8 @@
 
       <nav class="patient-nav">
         <a href="paciente_dashboard.html" class="active">Início</a>
-        <a href="#">Agendar consulta</a>
+        <!-- Link corrigido para a página de busca -->
+        <a href="buscar_especialista.html">Agendar consulta</a>
         <a href="#">Histórico de laudos</a>
       </nav>
 
@@ -34,7 +34,6 @@
     </div>
   </header>
 
-  <!-- Conteúdo Principal -->
   <main class="dashboard-main">
     
     <div class="welcome-section">
@@ -59,10 +58,10 @@
         <h2>Você não tem consultas agendadas.</h2>
         <p>Encontre um especialista e escolha o melhor dia e horário.</p>
       </div>
-      <a href="#" class="btn btn-primary" style="width: auto;">Agendar Consulta</a>
+      <!-- Botão corrigido para a página de busca -->
+      <a href="buscar_especialista.html" class="btn btn-primary" style="width: auto;">Agendar Consulta</a>
     </div>
 
-    <!-- GRID DE ATALHOS -->
     <h2 class="section-title">Atalhos</h2>
     <div class="shortcuts-grid">
       
@@ -73,7 +72,7 @@
         </div>
         <h3>Agendar consulta</h3>
         <p>Busque um especialista e escolha o horário.</p>
-        <a href="#" class="shortcut-link">Buscar especialista &rarr;</a>
+        <a href="buscar_especialista.html" class="shortcut-link">Buscar especialista &rarr;</a>
       </div>
 
       <!-- Atalho 2 -->
@@ -98,7 +97,6 @@
 
     </div>
 
-    <!-- SEÇÃO: Exibição dos dados do paciente -->
     <h2 class="section-title" id="dados-paciente" style="margin-top: 40px;">Suas Informações</h2>
     <div class="shortcut-card" style="flex-direction: row; gap: 20px; align-items: flex-start;">
       <div class="shortcut-icon" style="margin-bottom: 0;">
