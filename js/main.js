@@ -30,14 +30,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   let perfilAtivo = "paciente"; 
 
-  // Semeia o banco de profissionais
+  // Semeia o banco de profissionais (incluindo cidade, rua e preço)
   const profissionaisSalvos = JSON.parse(localStorage.getItem("@medtriage/profissionais"));
   if (!profissionaisSalvos || profissionaisSalvos.length === 0) {
     const profissionaisParaSalvar = [];
     for (const med of dbMedicos) {
       const hash = await hashPassword(med.senha);
       profissionaisParaSalvar.push({ 
-        id: med.matricula, nome: med.nome, senhaHash: hash, crm: med.crm, especialidade: med.especialidade
+        id: med.matricula, 
+        nome: med.nome, 
+        senhaHash: hash, 
+        crm: med.crm, 
+        especialidade: med.especialidade,
+        cidade: med.cidade,
+        rua: med.rua,
+        preco: med.preco
       });
     }
     localStorage.setItem("@medtriage/profissionais", JSON.stringify(profissionaisParaSalvar));
@@ -93,7 +100,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     inputId.addEventListener("input", function (e) {
       if (perfilAtivo === "profissional") {
-        // CORREÇÃO: Aceita letras e números na matrícula, forçando maiúsculo
         e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase(); 
         return;
       }
@@ -224,7 +230,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.body.classList.add("theme-professional");
       labelRecuperar.textContent = "Matrícula";
       inputRecuperar.placeholder = "Digite sua matrícula";
-      
       inputRecuperar.addEventListener("input", function(e) {
         e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
       });
@@ -269,7 +274,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Botão Logout (Funciona em todas as telas)
+  // Botão Logout Funciona em todas as telas
   const btnLogout = document.getElementById("btn-logout");
   if (btnLogout) {
     btnLogout.addEventListener("click", (e) => {
@@ -300,7 +305,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Tela Meus Dados
+  // Tela Meus Dados (Paciente)
   const formMeusDados = document.getElementById("form-meus-dados");
   if (formMeusDados) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
@@ -474,6 +479,60 @@ document.addEventListener("DOMContentLoaded", async () => {
         const filtrados = dbPacientesTabela.filter(p => p.cpf.includes(termo) || p.nome.toLowerCase().includes(termo.toLowerCase()));
         renderizarTabela(filtrados);
       }
+    });
+  }
+
+  // Tela de Perfil do Médico
+  const formPerfilMedico = document.getElementById("form-perfil-medico");
+  if (formPerfilMedico) {
+    const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
+    
+    // Verifica se o usuário logado é realmente um médico
+    if (!sessao || !sessao.id.includes("MED")) {
+      alert("Acesso negado. Faça login como profissional.");
+      window.location.replace("index.html");
+      return;
+    }
+
+    document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
+
+    // Se algum dado estiver vazio na sessão, tenta buscar no dbMedicos original como fallback
+    const medicoDB = dbMedicos.find(m => m.matricula === sessao.id) || {};
+
+    document.getElementById("perfil-nome").value = sessao.nome || "";
+    document.getElementById("perfil-matricula").value = sessao.id || "";
+    document.getElementById("perfil-crm").value = sessao.crm || "";
+    document.getElementById("perfil-especialidade").value = sessao.especialidade || "";
+    
+    document.getElementById("perfil-cidade").value = sessao.cidade || medicoDB.cidade || "";
+    document.getElementById("perfil-rua").value = sessao.rua || medicoDB.rua || "";
+    document.getElementById("perfil-preco").value = sessao.preco || medicoDB.preco || "";
+
+    // Lógica para salvar as alterações
+    formPerfilMedico.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const nome = document.getElementById("perfil-nome").value.trim();
+      const cidade = document.getElementById("perfil-cidade").value.trim();
+      const rua = document.getElementById("perfil-rua").value.trim();
+      const preco = document.getElementById("perfil-preco").value.trim();
+
+      // Atualiza a sessão ativa
+      const sessaoAtualizada = { ...sessao, nome, cidade, rua, preco };
+      localStorage.setItem("@medtriage/sessao", JSON.stringify(sessaoAtualizada));
+
+      // Atualiza o banco de dados de profissionais
+      const storageKey = "@medtriage/profissionais";
+      const profissionaisSalvos = JSON.parse(localStorage.getItem(storageKey)) || [];
+      const index = profissionaisSalvos.findIndex(m => m.id === sessao.id);
+      
+      if (index !== -1) {
+        profissionaisSalvos[index] = { ...profissionaisSalvos[index], nome, cidade, rua, preco };
+        localStorage.setItem(storageKey, JSON.stringify(profissionaisSalvos));
+      }
+
+      alert("Perfil atualizado com sucesso!");
+      window.location.href = "medico_dashboard.html";
     });
   }
 });
