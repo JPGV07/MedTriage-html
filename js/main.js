@@ -8,39 +8,36 @@ async function hashPassword(password) {
 
 // Banco de dados simulado de médicos
 const dbMedicos = [
-  // Oftalmologistas
   { id: 1, nome: "Dr. Carlos Silva", especialidade: "Oftalmologista", cidade: "João Pessoa", crm: "CRM-PB 12345", matricula: "MED1001", senha: "senha123", rating: 4.9, avaliacoes: 35, preco: "R$ 250,00", rua: "Av. Epitácio Pessoa, 1000" },
   { id: 2, nome: "Dra. Beatriz Nogueira", especialidade: "Oftalmologista", cidade: "Campina Grande", crm: "CRM-PB 12346", matricula: "MED1002", senha: "senha123", rating: 4.8, avaliacoes: 22, preco: "R$ 240,00", rua: "Rua Maciel Pinheiro, 150" },
-  
-  // Cardiologistas
   { id: 3, nome: "Dra. Ana Costa", especialidade: "Cardiologista", cidade: "João Pessoa", crm: "CRM-PB 54321", matricula: "MED2001", senha: "senha123", rating: 4.9, avaliacoes: 50, preco: "R$ 300,00", rua: "Rua das Palmeiras, 450" },
   { id: 4, nome: "Dr. Ricardo Dias", especialidade: "Cardiologista", cidade: "Campina Grande", crm: "CRM-PB 54322", matricula: "MED2002", senha: "senha123", rating: 4.7, avaliacoes: 18, preco: "R$ 280,00", rua: "Av. Marechal Floriano, 300" },
-  
-  // Dermatologistas
   { id: 5, nome: "Dr. Roberto Alves", especialidade: "Dermatologista", cidade: "João Pessoa", crm: "CRM-PB 98765", matricula: "MED3001", senha: "senha123", rating: 4.8, avaliacoes: 30, preco: "R$ 200,00", rua: "Av. Nossa Senhora de Lourdes, 200" },
   { id: 6, nome: "Dra. Camila Ferreira", especialidade: "Dermatologista", cidade: "Campina Grande", crm: "CRM-PB 98766", matricula: "MED3002", senha: "senha123", rating: 4.6, avaliacoes: 12, preco: "R$ 190,00", rua: "Rua Treze de Maio, 80" },
-  
-  // Clínicos Gerais
   { id: 7, nome: "Dra. Juliana Mendes", especialidade: "Clínico geral", cidade: "João Pessoa", crm: "CRM-PB 11122", matricula: "MED4001", senha: "senha123", rating: 4.9, avaliacoes: 60, preco: "R$ 150,00", rua: "Rua da Areia, 300" },
   { id: 8, nome: "Dr. Paulo Henrique", especialidade: "Clínico geral", cidade: "Campina Grande", crm: "CRM-PB 11123", matricula: "MED4002", senha: "senha123", rating: 4.7, avaliacoes: 25, preco: "R$ 140,00", rua: "Rua Venâncio Neiva, 500" }
+];
+
+// Banco de dados simulado de pacientes (para a tabela do médico)
+const dbPacientesTabela = [
+  { nome: "Maria da Silva", cpf: "123.***.**-**", ultimoAtendimento: "15/10/2023" },
+  { nome: "José Almeida", cpf: "456.***.**-**", ultimoAtendimento: "10/10/2023" },
+  { nome: "Ana Souza", cpf: "789.***.**-**", ultimoAtendimento: "05/10/2023" },
+  { nome: "Carlos Pereira", cpf: "321.***.**-**", ultimoAtendimento: "28/09/2023" }
 ];
 
 document.addEventListener("DOMContentLoaded", async () => {
   
   let perfilAtivo = "paciente"; 
 
-  // Semeia o banco de profissionais se ele estiver vazio para permitir testes de login
+  // Semeia o banco de profissionais
   const profissionaisSalvos = JSON.parse(localStorage.getItem("@medtriage/profissionais"));
   if (!profissionaisSalvos || profissionaisSalvos.length === 0) {
     const profissionaisParaSalvar = [];
     for (const med of dbMedicos) {
       const hash = await hashPassword(med.senha);
       profissionaisParaSalvar.push({ 
-        id: med.matricula, 
-        nome: med.nome, 
-        senhaHash: hash,
-        crm: med.crm,
-        especialidade: med.especialidade
+        id: med.matricula, nome: med.nome, senhaHash: hash, crm: med.crm, especialidade: med.especialidade
       });
     }
     localStorage.setItem("@medtriage/profissionais", JSON.stringify(profissionaisParaSalvar));
@@ -140,11 +137,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (usuarioCadastrado.senhaHash === senhaHash) {
         localStorage.setItem("@medtriage/tentativas", "0");
         localStorage.setItem("@medtriage/sessao", JSON.stringify(usuarioCadastrado));
+        
+        // REDIRECIONAMENTO CORRETO BASEADO NO PERFIL
         if (perfilAtivo === "paciente") {
           window.location.href = "paciente_dashboard.html"; 
         } else {
-          // Futuramente, redirecionar para o dashboard do médico
-          alert(`Bem-vindo(a), ${usuarioCadastrado.nome}! Área do profissional em construção.`);
+          window.location.href = "medico_dashboard.html"; 
         }
       } else {
         tentativas++;
@@ -267,7 +265,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Dashboard e Logout
+  // Botão Logout (Funciona em todas as telas)
   const btnLogout = document.getElementById("btn-logout");
   if (btnLogout) {
     btnLogout.addEventListener("click", (e) => {
@@ -278,11 +276,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // Tela Dashboard do Paciente
   const welcomeTitle = document.getElementById("welcome-title");
-  if (welcomeTitle) {
+  if (welcomeTitle && window.location.pathname.includes("paciente")) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
-    if (!sessao) {
-      alert("Acesso negado. Faça login primeiro.");
+    if (!sessao || sessao.id.includes("MED")) {
+      alert("Acesso negado. Faça login como paciente.");
       window.location.replace("index.html");
       return;
     }
@@ -297,11 +296,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Tela de Meus Dados
+  // Tela Meus Dados
   const formMeusDados = document.getElementById("form-meus-dados");
   if (formMeusDados) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
-    
     if (!sessao) {
       alert("Acesso negado. Faça login primeiro.");
       window.location.replace("index.html");
@@ -319,18 +317,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("dados-altura").value = sessao.altura || "";
 
     const checkboxesDoencas = document.querySelectorAll(".check-doenca");
-    checkboxesDoencas.forEach(cb => {
-      cb.checked = (sessao.doencas || []).includes(cb.value);
-    });
+    checkboxesDoencas.forEach(cb => { cb.checked = (sessao.doencas || []).includes(cb.value); });
 
     const checkboxesDeficiencias = document.querySelectorAll(".check-deficiencia");
-    checkboxesDeficiencias.forEach(cb => {
-      cb.checked = (sessao.deficiencias || []).includes(cb.value);
-    });
+    checkboxesDeficiencias.forEach(cb => { cb.checked = (sessao.deficiencias || []).includes(cb.value); });
 
     formMeusDados.addEventListener("submit", (e) => {
       e.preventDefault();
-
       const nome = document.getElementById("dados-nome").value.trim();
       const email = document.getElementById("dados-email").value.trim();
       const nascimento = document.getElementById("dados-nascimento").value;
@@ -340,24 +333,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       const altura = document.getElementById("dados-altura").value;
 
       const doencasMarcadas = Array.from(checkboxesDoencas).filter(cb => cb.checked).map(cb => cb.value);
-      if (doencasMarcadas.length > 1) {
-        const indexNenhuma = doencasMarcadas.indexOf("Nenhuma");
-        if (indexNenhuma > -1) doencasMarcadas.splice(indexNenhuma, 1);
+      if (doencasMarcadas.length > 1 && doencasMarcadas.includes("Nenhuma")) {
+        doencasMarcadas.splice(doencasMarcadas.indexOf("Nenhuma"), 1);
       }
 
       const deficienciasMarcadas = Array.from(checkboxesDeficiencias).filter(cb => cb.checked).map(cb => cb.value);
-      if (deficienciasMarcadas.length > 1) {
-        const indexNenhuma = deficienciasMarcadas.indexOf("Nenhuma");
-        if (indexNenhuma > -1) deficienciasMarcadas.splice(indexNenhuma, 1);
+      if (deficienciasMarcadas.length > 1 && deficienciasMarcadas.includes("Nenhuma")) {
+        deficienciasMarcadas.splice(deficienciasMarcadas.indexOf("Nenhuma"), 1);
       }
 
-      const sessaoAtualizada = {
-        ...sessao,
-        nome, email, nascimento, sexo, genero, peso, altura,
-        doencas: doencasMarcadas,
-        deficiencias: deficienciasMarcadas
-      };
-
+      const sessaoAtualizada = { ...sessao, nome, email, nascimento, sexo, genero, peso, altura, doencas: doencasMarcadas, deficiencias: deficienciasMarcadas };
       const storageKey = "@medtriage/pacientes";
       const usuariosSalvos = JSON.parse(localStorage.getItem(storageKey)) || [];
       const index = usuariosSalvos.findIndex(u => u.id === sessao.id);
@@ -366,7 +351,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         usuariosSalvos[index] = sessaoAtualizada;
         localStorage.setItem(storageKey, JSON.stringify(usuariosSalvos));
       }
-
       localStorage.setItem("@medtriage/sessao", JSON.stringify(sessaoAtualizada));
 
       alert("Dados salvos com sucesso!");
@@ -374,12 +358,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Tela de Busca de Especialistas
+  // Tela Busca de Especialistas
   const listaMedicos = document.getElementById("lista-medicos");
   if (listaMedicos) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
-    if (!sessao) {
-      alert("Acesso negado. Faça login primeiro.");
+    if (!sessao || sessao.id.includes("MED")) {
+      alert("Acesso negado. Faça login como paciente.");
       window.location.replace("index.html");
       return;
     }
@@ -412,7 +396,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             </div>
             <div class="doctor-details">
               <h3>${medico.nome}</h3>
-              <p class="specialty">${medico.especialidade} · ${medico.crm} · Matrícula: ${medico.matricula}</p>
+              <p class="specialty">${medico.especialidade} · ${medico.crm}</p>
               <p class="rating">★ ${medico.rating} · <span style="color: var(--text-muted); font-weight: 400;">${medico.avaliacoes} opiniões</span></p>
               <p class="location">${medico.rua}, ${medico.cidade}</p>
             </div>
@@ -429,17 +413,63 @@ document.addEventListener("DOMContentLoaded", async () => {
     btnBuscar.addEventListener("click", () => {
       const esp = filtroEspecialidade.value;
       const cid = filtroCidade.value;
-
       const filtrados = dbMedicos.filter(m => {
         const matchEsp = esp === "Todas" || m.especialidade === esp;
         const matchCid = m.cidade === cid;
         return matchEsp && matchCid;
       });
-
       renderizarMedicos(filtrados);
     });
 
-    // Renderiza os médicos de João Pessoa por padrão ao carregar a tela
     renderizarMedicos(dbMedicos.filter(m => m.cidade === "João Pessoa"));
+  }
+
+  // Tela Dashboard do Médico
+  const tabelaMedico = document.getElementById("tabela-pacientes-body");
+  if (tabelaMedico) {
+    const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
+    
+    if (!sessao || !sessao.id.includes("MED")) {
+      alert("Acesso negado. Faça login como profissional.");
+      window.location.replace("index.html");
+      return;
+    }
+
+    document.getElementById("welcome-title").textContent = `Olá, ${sessao.nome}`;
+    document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
+
+    const renderizarTabela = (pacientes) => {
+      tabelaMedico.innerHTML = "";
+      if(pacientes.length === 0) {
+        tabelaMedico.innerHTML = "<tr><td colspan='4' style='text-align:center; color:var(--text-muted);'>Nenhum paciente encontrado.</td></tr>";
+        return;
+      }
+      
+      pacientes.forEach(p => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.nome}</td>
+          <td>${p.cpf}</td>
+          <td>${p.ultimoAtendimento}</td>
+          <td><a href="#" class="action-link" onclick="alert('Ver histórico de ${p.nome}')">Ver histórico</a></td>
+        `;
+        tabelaMedico.appendChild(tr);
+      });
+    };
+
+    renderizarTabela(dbPacientesTabela);
+
+    const buscaCpf = document.getElementById("busca-paciente-cpf");
+    const btnBuscar = document.getElementById("btn-buscar-paciente");
+
+    btnBuscar.addEventListener("click", () => {
+      const termo = buscaCpf.value.trim();
+      if(termo === "") {
+        renderizarTabela(dbPacientesTabela);
+      } else {
+        const filtrados = dbPacientesTabela.filter(p => p.cpf.includes(termo) || p.nome.toLowerCase().includes(termo.toLowerCase()));
+        renderizarTabela(filtrados);
+      }
+    });
   }
 });

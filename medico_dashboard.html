@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Médico - MedTriage</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="patient-header">
+    <div class="patient-header-container">
+      <div class="brand" style="margin-bottom: 0;">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="20" height="20" rx="4" fill="currentColor"/>
+          <path d="M12 6V18M6 12H18" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <span>MedTriage</span>
+      </div>
+
+      <nav class="patient-nav">
+        <a href="medico_dashboard.html" class="active">Meus pacientes</a>
+        <a href="#">Agenda de hoje</a>
+        <a href="#">Histórico de atendimentos</a>
+      </nav>
+
+      <div class="patient-user-area">
+        <span class="user-greeting" id="user-greeting">Olá, Dr(a). [Nome]</span>
+        <button id="btn-logout" class="btn-outline" style="padding: 8px 16px; width: auto;">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-main">
+    
+    <div class="welcome-section">
+      <h1 id="welcome-title">Olá, Dr(a). [Nome]</h1>
+      <p>Seus pacientes e atendimentos.</p>
+    </div>
+
+    <!-- Card Próxima Consulta (Médico) -->
+    <div class="next-appointment-card" style="background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%); border-color: #7DD3FC;">
+      <div class="appointment-info">
+        <span class="badge-waiting" style="background-color: #FEF3C7; color: #B45309;">PRÓXIMA CONSULTA [00:00]</span>
+        <h2>Maria da Silva</h2>
+        <p style="font-weight: 500; color: var(--primary);">Retorno • Teleconsulta</p>
+      </div>
+      <button class="btn btn-primary" style="width: auto;" onclick="alert('Iniciando atendimento...')">Iniciar atendimento</button>
+    </div>
+
+    <!-- Busca de Paciente -->
+    <div class="search-box" style="margin-bottom: 32px;">
+      <div class="input-group" style="flex: 1;">
+        <label for="busca-paciente-cpf">Buscar paciente por CPF</label>
+        <input type="text" id="busca-paciente-cpf" placeholder="000.000.000-00">
+      </div>
+      <button id="btn-buscar-paciente" class="btn btn-primary">Buscar</button>
+    </div>
+
+    <!-- Lista de Pacientes Atrelados -->
+    <h2 class="section-title">Pacientes atrelados a você</h2>
+    
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Paciente</th>
+            <th>CPF</th>
+            <th>Último atendimento</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-pacientes-body">
+          <!-- O JavaScript vai preencher esta tabela -->
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
