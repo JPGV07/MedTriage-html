@@ -48,3 +48,59 @@
       expect(global.alert).toHaveBeenCalledWith("Erro: CPF não encontrado(a). Verifique os dados ou crie uma conta.");
       expect(window.location.href).not.toBe("paciente_dashboard.html");
     });
+        test('Deve sugerir troca de senha se tentar logar bloqueado', async () => {
+      // Simula usuário bloqueado
+      localStorage.setItem('@medtriage/tentativas', "5");
+      global.confirm = jest.fn().mockReturnValue(true); // Simula usuário clicando em "OK"
+      
+      document.getElementById('input-id').value = "123.456.789-00";
+      document.getElementById('senha').value = "qualquer";
+
+      document.getElementById('login-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+      await new Promise(process.nextTick);
+
+      // Verifica se o confirm foi chamado e redirecionou
+      expect(global.confirm).toHaveBeenCalled();
+      expect(window.location.href).toBe("recuperar_senha.html");
+    });
+
+    test('Deve permitir redefinir a senha na tela de recuperação', async () => {
+      // Cria um paciente
+      const hashAntigo = nodeCrypto.createHash('sha256').update("senha_antiga").digest('hex');
+      localStorage.setItem('@medtriage/pacientes', JSON.stringify([{ id: "123.456.789-00", senhaHash: hashAntigo }]));
+      localStorage.setItem('@medtriage/reset-perfil', "paciente"); // Simula que veio do login de paciente
+
+      // Recria o DOM para carregar a tela de recuperação (simulação)
+      setupDOM(); 
+      // Nota: Como o JSDOM não recarrega a página real, precisamos injetar o form de recuperação manualmente para o teste
+      document.body.innerHTML += `
+        <form id="recuperar-form">
+          <input id="input-recuperar-id" />
+          <input id="nova-senha-recuperar" />
+          <input id="repetir-senha-recuperar" />
+          <button type="submit"></button>
+        </form>
+        <label id="label-recuperar-id"></label>
+      `;
+      
+      // Re-executa o script para pegar os novos elementos
+      const script = document.createElement("script");
+      script.textContent = mainJs;
+      document.body.appendChild(script);
+      document.dispatchEvent(new window.Event('DOMContentLoaded'));
+
+      // Preenche o formulário
+      document.getElementById('input-recuperar-id').value = "123.456.789-00";
+      document.getElementById('nova-senha-recuperar').value = "senha_nova";
+      document.getElementById('repetir-senha-recuperar').value = "senha_nova";
+
+      document.getElementById('recuperar-form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+      await new Promise(process.nextTick);
+
+      // Verifica se o hash foi atualizado no banco
+      const pacientesAtualizados = JSON.parse(localStorage.getItem('@medtriage/pacientes'));
+      const hashNovo = nodeCrypto.createHash('sha256').update("senha_nova").digest('hex');
+      
+      expect(pacientesAtualizados[0].senhaHash).toBe(hashNovo);
+      expect(localStorage.getItem('@medtriage/tentativas')).toBe("0");
+    });

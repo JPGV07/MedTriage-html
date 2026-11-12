@@ -4,13 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - MedTriage</title>
+  <!-- Importação dos estilos globais -->
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+  <!-- Wrapper principal que centraliza o conteúdo na tela -->
   <div class="login-wrapper">
+    
+    <!-- Card branco onde fica o formulário -->
     <div class="login-card">
       
+      <!-- Cabeçalho com a Logo -->
       <div class="brand">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="2" y="2" width="20" height="20" rx="4" fill="currentColor"/>
@@ -19,46 +24,64 @@
         <span>MedTriage</span>
       </div>
 
+      <!-- Títulos de boas-vindas -->
       <h1 class="title">Bem-vindo ao MedTriage</h1>
       <p class="subtitle">Entre para cuidar da sua saúde.</p>
 
+      <!-- Abas para alternar entre Paciente e Profissional -->
       <div class="tabs-container">
         <button class="tab-btn active" id="btn-paciente" type="button">Sou paciente</button>
         <button class="tab-btn" id="btn-profissional" type="button">Sou profissional</button>
       </div>
 
+      <!-- Formulário de Login -->
       <form id="login-form">
+        
+        <!-- Campo de CPF / Matrícula -->
         <div class="input-group">
+          <!-- O label e o placeholder mudam via JavaScript dependendo da aba selecionada -->
           <label for="input-id" id="label-id">CPF</label>
           <div class="input-wrapper">
             <input type="text" id="input-id" placeholder="000.000.000-00" required>
           </div>
         </div>
 
+        <!-- Campo de Senha -->
         <div class="input-group">
           <label for="senha">Senha</label>
           <div class="input-wrapper">
             <input type="password" id="senha" placeholder="Digite sua senha" required>
+            
+            <!-- Botão do "olho" para mostrar/ocultar a senha -->
             <button type="button" class="icon-btn toggle-password">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
             </button>
           </div>
         </div>
 
-        <a href="#" class="forgot-link">Esqueci minha senha</a>
+        <!-- Link para recuperação de senha (CORRIGIDO) -->
+        <a href="recuperar_senha.html" class="forgot-link" id="link-esqueci-senha">Esqueci minha senha</a>
+        
+        <!-- Botão de Enviar -->
         <button type="submit" class="btn btn-primary">Entrar</button>
       </form>
 
+      <!-- Caixa de Primeiro Acesso -->
       <div class="first-time-box">
         <p>Primeira vez aqui?</p>
         <a href="cadastro.html" class="btn btn-outline">Criar meu acesso</a>
       </div>
 
+      <!-- Rodapé de ajuda -->
       <p class="help-text">Precisa de ajuda? Ligue [TELEFONE]</p>
 
     </div>
   </div>
 
+  <!-- Script com as lógicas de interação -->
   <script src="js/main.js"></script>
 </body>
 </html>
