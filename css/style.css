@@ -885,3 +885,289 @@ body {
   .preco-destaque-box { flex-direction: column; align-items: flex-start; }
   .preco-destaque-box .btn { width: 100% !important; }
 }
+/* Estilos para o fluxo de agendamento (Etapa 1) */
+
+/* Stepper (Etapas) */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.step.active {
+  color: var(--text-main);
+}
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+.step.active .step-circle {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border-color);
+  min-width: 20px;
+}
+
+/* Layout de duas colunas (Principal + Resumo) */
+.booking-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 32px;
+  align-items: start;
+}
+
+/* Grid de opções de tipo de consulta */
+.tipo-consulta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.tipo-consulta-grid .radio-card {
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  background: var(--bg-surface);
+  transition: all 0.2s;
+}
+
+.tipo-consulta-grid .radio-card.selected {
+  border-color: var(--primary);
+  background: #F0F9FF;
+}
+
+.tipo-consulta-grid input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--primary);
+}
+
+.radio-card-titulo {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Grid de Dias */
+.dias-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.dia-item {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--bg-surface);
+  transition: all 0.2s;
+}
+
+.dia-item.selected {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.dia-item.selected .dia-semana,
+.dia-item.selected .dia-data {
+  color: white;
+}
+
+.dia-semana {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.dia-data {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Grid de Horários */
+.horarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.btn-horario {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-surface);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.btn-horario:hover:not(.disabled) {
+  border-color: var(--primary);
+  background: #F0F9FF;
+}
+
+.btn-horario.selected {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.btn-horario.disabled {
+  background: var(--bg-body);
+  color: var(--border-color);
+  border-color: var(--border-color);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* Resumo Lateral */
+.booking-summary {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  position: sticky;
+  top: 24px;
+}
+
+.booking-summary h3 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
+}
+
+.summary-medico-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.summary-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #E0F2FE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+.summary-nome {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.summary-especialidade {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.summary-item {
+  margin-bottom: 16px;
+}
+
+.summary-item label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.summary-item span {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* Botões de ação */
+.action-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .booking-layout {
+    grid-template-columns: 1fr;
+  }
+  .booking-summary {
+    position: static;
+    order: -1;
+    margin-bottom: 24px;
+  }
+  .dias-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .tipo-consulta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Estilos dos dois valores no perfil do médico */
+.valores-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.valor-box {
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.valor-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.valor-preco {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .valores-grid {
+    grid-template-columns: 1fr;
+  }
+}
