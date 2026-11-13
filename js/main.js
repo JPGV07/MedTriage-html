@@ -616,4 +616,72 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderizarHorarios();
     atualizarResumo();
   }
+    // Tela de Agendamento - Etapa 2
+  const formEtapa2 = document.getElementById("form-etapa2");
+  if (formEtapa2) {
+    const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
+    if (!sessao) { window.location.replace("index.html"); return; }
+    document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
+
+    // Recupera os dados escolhidos na Etapa 1
+    const agendamentoTemp = JSON.parse(localStorage.getItem("@medtriage/agendamento-temp"));
+    if (!agendamentoTemp) {
+      alert("Nenhum agendamento em andamento. Volte para a busca.");
+      window.location.replace("buscar_especialista.html");
+      return;
+    }
+
+    // Exibe os dados no resumo lateral
+    document.getElementById("resumo-nome").textContent = agendamentoTemp.medicoNome;
+    document.getElementById("resumo-especialidade").textContent = agendamentoTemp.especialidade;
+    document.getElementById("resumo-tipo").textContent = agendamentoTemp.tipo;
+    document.getElementById("resumo-valor").textContent = agendamentoTemp.valor;
+
+    // Formata a data (que está no formato YYYY-MM-DD)
+    const dataObj = new Date(agendamentoTemp.data + "T00:00:00");
+    const diaFormatado = String(dataObj.getDate()).padStart(2, "0");
+    const mesFormatado = String(dataObj.getMonth() + 1).padStart(2, "0");
+    document.getElementById("resumo-horario").textContent = `${diaFormatado}/${mesFormatado} às ${agendamentoTemp.horario}`;
+
+    // Lógica dos radio cards (para mudar a cor de seleção)
+    const radiosEtapa2 = document.querySelectorAll('.tipo-consulta-grid .radio-card');
+    radiosEtapa2.forEach(card => {
+      card.addEventListener("click", (e) => {
+        // Encontra todos os cards do mesmo grupo (mesmo name)
+        const input = card.querySelector('input');
+        const nomeGrupo = input.getAttribute('name');
+        
+        document.querySelectorAll(`input[name="${nomeGrupo}"]`).forEach(inp => {
+          inp.closest('.radio-card').classList.remove('selected');
+        });
+        
+        card.classList.add('selected');
+        input.checked = true;
+      });
+    });
+
+    // Ação do botão Avançar
+    const btnAvancarEtapa2 = document.getElementById("btn-avancar-etapa2");
+    btnAvancarEtapa2.addEventListener("click", () => {
+      // Coleta os valores selecionados
+      const paraQuem = document.querySelector('input[name="para-quem"]:checked').value;
+      const primeiraVez = document.querySelector('input[name="primeira-vez"]:checked').value;
+      const convenio = document.getElementById("etapa2-convenio").value;
+      const motivo = document.getElementById("etapa2-motivo").value.trim();
+
+      // Mescla os dados da Etapa 1 com os novos dados da Etapa 2
+      const agendamentoCompleto = {
+        ...agendamentoTemp,
+        paraQuem: paraQuem,
+        primeiraVez: primeiraVez,
+        convenio: convenio,
+        motivo: motivo
+      };
+
+      // Salva para a Etapa 3 ler
+      localStorage.setItem("@medtriage/agendamento-temp", JSON.stringify(agendamentoCompleto));
+      
+      window.location.href = "agendar_etapa3.html";
+    });
+  }
 });
