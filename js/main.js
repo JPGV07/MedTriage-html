@@ -278,22 +278,109 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Tela Dashboard do Paciente
+    // Tela Dashboard do Paciente
   const welcomeTitle = document.getElementById("welcome-title");
-  if (welcomeTitle && window.location.pathname.includes("paciente")) {
+  if (welcomeTitle && window.location.pathname.includes("paciente_dashboard")) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     if (!sessao || sessao.id.includes("MED")) {
       alert("Acesso negado. Faça login como paciente.");
       window.location.replace("index.html");
       return;
     }
+
     welcomeTitle.textContent = `Olá, ${sessao.nome || 'Paciente'}`;
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome || 'Paciente'}`;
-    if(document.getElementById("info-nome")) {
-      document.getElementById("info-nome").textContent = sessao.nome || "Não informado";
-      document.getElementById("info-cpf").textContent = sessao.id;
-      document.getElementById("info-email").textContent = sessao.email || "Não informado";
+
+    // Verifica se o paciente tem consultas agendadas
+    const consultasSalvas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
+    const minhasConsultas = consultasSalvas.filter(c => c.pacienteId === sessao.id && c.status !== "Cancelada");
+
+    const cardComConsulta = document.getElementById("card-com-consulta");
+    const cardSemConsulta = document.getElementById("card-sem-consulta");
+
+    if (minhasConsultas.length > 0) {
+      // Tem consulta: esconde o vazio e mostra o card preenchido
+      cardSemConsulta.style.display = "none";
+      cardComConsulta.style.display = "flex";
+
+      // Pega a consulta mais recente (ou a próxima)
+      const proximaConsulta = minhasConsultas[minhasConsultas.length - 1];
+
+      document.getElementById("appointment-date").textContent = `${proximaConsulta.dataFormatada} às ${proximaConsulta.horario}`;
+      document.getElementById("appointment-doctor").textContent = `${proximaConsulta.medicoNome} • ${proximaConsulta.especialidade}`;
+      document.getElementById("appointment-location").textContent = proximaConsulta.tipo === "Teleconsulta" ? "Teleconsulta (online)" : proximaConsulta.endereco;
+
+      // Ação do botão de detalhes
+      document.getElementById("btn-ver-detalhes").addEventListener("click", () => {
+        localStorage.setItem("@medtriage/consulta-selecionada", proximaConsulta.id);
+        window.location.href = "detalhes_consulta.html";
+      });
+    } else {
+      // Sem consulta: mantém o card vazio
+      cardComConsulta.style.display = "none";
+      cardSemConsulta.style.display = "flex";
     }
+  }
+
+  // Tela de Detalhes da Consulta
+  const detalheData = document.getElementById("detalhe-data");
+  if (detalheData) {
+    const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
+    if (!sessao) { window.location.replace("index.html"); return; }
+    document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
+
+    // Pega o ID da consulta selecionada
+    const idConsulta = parseInt(localStorage.getItem("@medtriage/consulta-selecionada"));
+    const consultasSalvas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
+    const consulta = consultasSalvas.find(c => c.id === idConsulta);
+
+    if (!consulta) {
+      alert("Consulta não encontrada.");
+      window.location.replace("paciente_dashboard.html");
+      return;
+    }
+
+    // Preenche os dados
+    document.getElementById("detalhe-data").textContent = `${consulta.dataFormatada} às ${consulta.horario}`;
+    document.getElementById("detalhe-medico").textContent = consulta.medicoNome;
+    document.getElementById("detalhe-servico").textContent = consulta.especialidade;
+    document.getElementById("detalhe-local").textContent = consulta.tipo === "Teleconsulta" ? "Online" : consulta.endereco;
+    document.getElementById("detalhe-tipo").textContent = consulta.tipo;
+    document.getElementById("detalhe-valor").textContent = consulta.valor;
+    document.getElementById("detalhe-convenio").textContent = consulta.convenio;
+    document.getElementById("detalhe-confirmacao").textContent = consulta.metodoConfirmacao === "email" ? "Por e-mail" : "Por WhatsApp";
+    
+    // Atualiza o status visual
+    const badgeStatus = document.getElementById("detalhe-status");
+    if (consulta.status === "Cancelada") {
+      badgeStatus.textContent = "Cancelada";
+      badgeStatus.style.background = "#FEE2E2";
+      badgeStatus.style.color = "#991B1B";
+    } else {
+      badgeStatus.textContent = "Em aguardo";
+    }
+
+    // Ação do botão Reagendar
+    document.getElementById("btn-reagendar").addEventListener("click", () => {
+      alert("Redirecionando para o reagendamento (em construção).");
+      // Futuramente: window.location.href = "agendar_etapa1.html";
+    });
+
+    // Ação do botão Cancelar
+    document.getElementById("btn-cancelar").addEventListener("click", () => {
+      const confirmar = confirm("Tem certeza que deseja cancelar esta consulta?");
+      if (confirmar) {
+        // Atualiza o status da consulta
+        const index = consultasSalvas.findIndex(c => c.id === idConsulta);
+        if (index !== -1) {
+          consultasSalvas[index].status = "Cancelada";
+          localStorage.setItem("@medtriage/consultas", JSON.stringify(consultasSalvas));
+        }
+        
+        alert("Consulta cancelada com sucesso.");
+        window.location.href = "paciente_dashboard.html";
+      }
+    });
   }
 
   // Tela Meus Dados (Paciente)
