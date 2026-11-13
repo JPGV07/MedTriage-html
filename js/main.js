@@ -684,4 +684,86 @@ document.addEventListener("DOMContentLoaded", async () => {
       window.location.href = "agendar_etapa3.html";
     });
   }
+    // Tela de Agendamento - Etapa 3 (Revisão)
+  const btnConfirmar = document.getElementById("btn-confirmar");
+  if (btnConfirmar) {
+    const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
+    if (!sessao) { window.location.replace("index.html"); return; }
+    document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
+
+    // Recupera os dados completos do agendamento (das etapas 1 e 2)
+    const agendamento = JSON.parse(localStorage.getItem("@medtriage/agendamento-temp"));
+    if (!agendamento) {
+      alert("Nenhum agendamento em andamento. Volte para a busca.");
+      window.location.replace("buscar_especialista.html");
+      return;
+    }
+
+    // Busca os dados completos do médico (para pegar o CRM e o endereço)
+    const medicosAtualizados = obterMedicosAtualizados();
+    const medico = medicosAtualizados.find(m => m.matricula === agendamento.medicoMatricula) || {};
+
+    // Formata a data (YYYY-MM-DD para DD/MM/YYYY)
+    const dataObj = new Date(agendamento.data + "T00:00:00");
+    const diaFormatado = String(dataObj.getDate()).padStart(2, "0");
+    const mesFormatado = String(dataObj.getMonth() + 1).padStart(2, "0");
+    const anoFormatado = dataObj.getFullYear();
+    const dataFormatada = `${diaFormatado}/${mesFormatado}/${anoFormatado}`;
+
+    // Preenche os dados na tela
+    document.getElementById("revisao-paciente").textContent = sessao.nome;
+    document.getElementById("revisao-servico").textContent = `Consulta de ${agendamento.especialidade}`;
+    document.getElementById("revisao-medico").textContent = agendamento.medicoNome;
+    document.getElementById("revisao-crm").textContent = medico.crm || "-";
+    document.getElementById("revisao-tipo").textContent = agendamento.tipo;
+    document.getElementById("revisao-horario").textContent = `${dataFormatada} às ${agendamento.horario}`;
+    document.getElementById("revisao-endereco").textContent = agendamento.tipo === "Teleconsulta" ? "Teleconsulta (online)" : `${medico.rua}, ${medico.cidade}`;
+    document.getElementById("revisao-convenio").textContent = agendamento.convenio;
+    document.getElementById("revisao-para-quem").textContent = agendamento.paraQuem;
+    document.getElementById("revisao-valor").textContent = agendamento.valor;
+
+    // Se o motivo estiver vazio, esconde o campo
+    if (agendamento.motivo && agendamento.motivo.trim() !== "") {
+      document.getElementById("revisao-motivo").textContent = agendamento.motivo;
+    } else {
+      document.getElementById("revisao-motivo-container").style.display = "none";
+    }
+
+    // Ação do botão Confirmar
+    btnConfirmar.addEventListener("click", () => {
+      // Cria o objeto final do agendamento
+      const consultaFinal = {
+        id: Date.now(),
+        pacienteId: sessao.id,
+        pacienteNome: sessao.nome,
+        medicoMatricula: agendamento.medicoMatricula,
+        medicoNome: agendamento.medicoNome,
+        especialidade: agendamento.especialidade,
+        crm: medico.crm || "",
+        tipo: agendamento.tipo,
+        data: agendamento.data,
+        dataFormatada: dataFormatada,
+        horario: agendamento.horario,
+        endereco: agendamento.tipo === "Teleconsulta" ? "Online" : `${medico.rua}, ${medico.cidade}`,
+        convenio: agendamento.convenio,
+        paraQuem: agendamento.paraQuem,
+        primeiraVez: agendamento.primeiraVez,
+        motivo: agendamento.motivo,
+        valor: agendamento.valor,
+        status: "Aguardando",
+        dataCriacao: new Date().toISOString()
+      };
+
+      // Salva na lista de consultas do paciente
+      const consultasSalvas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
+      consultasSalvas.push(consultaFinal);
+      localStorage.setItem("@medtriage/consultas", JSON.stringify(consultasSalvas));
+
+      // Limpa o agendamento temporário (já foi confirmado)
+      localStorage.removeItem("@medtriage/agendamento-temp");
+
+      // Redireciona para a tela de sucesso
+      window.location.href = "agendamento_sucesso.html";
+    });
+  }
 });
