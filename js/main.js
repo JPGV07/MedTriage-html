@@ -26,13 +26,13 @@ const dbPacientesTabela = [
   { nome: "Carlos Pereira", cpf: "321.***.**-**", ultimoAtendimento: "28/09/2023" }
 ];
 
-// Função que extrai o valor numérico de uma string de preço (ex: "R$ 250,00" vira 250)
+// Função que extrai o valor numérico de uma string de preço
 function extrairValorNumerico(precoString) {
   if (!precoString) return 0;
   return parseFloat(precoString.replace("R$", "").replace(".", "").replace(",", ".").trim()) || 0;
 }
 
-// Função que retorna o menor preço entre presencial e teleconsulta (para exibir "A partir de")
+// Função que retorna o menor preço entre presencial e teleconsulta
 function menorPreco(medico) {
   const valorPresencial = extrairValorNumerico(medico.preco);
   const valorTeleconsulta = extrairValorNumerico(medico.precoTeleconsulta);
@@ -40,7 +40,7 @@ function menorPreco(medico) {
   return `R$ ${menor.toFixed(2).replace(".", ",")}`;
 }
 
-// Função que mescla dados estáticos com os dados atualizados pelo médico no localStorage
+// Função que mescla dados estáticos com os dados atualizados pelo médico
 function obterMedicosAtualizados() {
   const profissionaisSalvos = JSON.parse(localStorage.getItem("@medtriage/profissionais")) || [];
   return dbMedicos.map(medicoEstatico => {
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   let perfilAtivo = "paciente"; 
 
-  // Semeia o banco de profissionais com preços de presencial e teleconsulta
+  // Semeia o banco de profissionais
   const profissionaisSalvos = JSON.parse(localStorage.getItem("@medtriage/profissionais"));
   if (!profissionaisSalvos || profissionaisSalvos.length === 0) {
     const profissionaisParaSalvar = [];
@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const usuariosSalvos = JSON.parse(localStorage.getItem(storageKey)) || [];
       if (usuariosSalvos.some(user => user.id === idValue)) return alert("Erro: Este CPF já possui cadastro.");
       const senhaHash = await hashPassword(senha);
-      const novoUsuario = { id: idValue, nome, senhaHash, email, nascimento: "", sexo: "", genero: "", peso: "", altura: "", doencas: [], deficiencias: [] };
+      const novoUsuario = { id: idValue, nome, senhaHash, email, telefone: "", nascimento: "", sexo: "", genero: "", peso: "", altura: "", doencas: [], deficiencias: [] };
       usuariosSalvos.push(novoUsuario);
       localStorage.setItem(storageKey, JSON.stringify(usuariosSalvos));
       localStorage.setItem("@medtriage/tentativas", "0");
@@ -301,37 +301,66 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (formMeusDados) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     if (!sessao) { window.location.replace("index.html"); return; }
+    
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
     document.getElementById("dados-nome").value = sessao.nome || "";
     document.getElementById("dados-cpf").value = sessao.id || "";
     document.getElementById("dados-email").value = sessao.email || "";
+    document.getElementById("dados-telefone").value = sessao.telefone || "";
     document.getElementById("dados-nascimento").value = sessao.nascimento || "";
     document.getElementById("dados-sexo").value = sessao.sexo || "";
     document.getElementById("dados-genero").value = sessao.genero || "";
     document.getElementById("dados-peso").value = sessao.peso || "";
     document.getElementById("dados-altura").value = sessao.altura || "";
+
+    // Máscara de telefone no campo
+    const inputTelefone = document.getElementById("dados-telefone");
+    inputTelefone.addEventListener("input", function(e) {
+      let valor = e.target.value.replace(/\D/g, "").substring(0, 11);
+      if (valor.length > 6) {
+        valor = valor.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, "($1) $2-$3");
+      } else if (valor.length > 2) {
+        valor = valor.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
+      } else if (valor.length > 0) {
+        valor = valor.replace(/^(\d*)/, "($1");
+      }
+      e.target.value = valor;
+    });
+
     const checkboxesDoencas = document.querySelectorAll(".check-doenca");
     checkboxesDoencas.forEach(cb => { cb.checked = (sessao.doencas || []).includes(cb.value); });
+
     const checkboxesDeficiencias = document.querySelectorAll(".check-deficiencia");
     checkboxesDeficiencias.forEach(cb => { cb.checked = (sessao.deficiencias || []).includes(cb.value); });
+
     formMeusDados.addEventListener("submit", (e) => {
       e.preventDefault();
       const nome = document.getElementById("dados-nome").value.trim();
       const email = document.getElementById("dados-email").value.trim();
+      const telefone = document.getElementById("dados-telefone").value.trim();
       const nascimento = document.getElementById("dados-nascimento").value;
       const sexo = document.getElementById("dados-sexo").value;
       const genero = document.getElementById("dados-genero").value;
       const peso = document.getElementById("dados-peso").value;
       const altura = document.getElementById("dados-altura").value;
+
       const doencasMarcadas = Array.from(checkboxesDoencas).filter(cb => cb.checked).map(cb => cb.value);
       if (doencasMarcadas.length > 1 && doencasMarcadas.includes("Nenhuma")) doencasMarcadas.splice(doencasMarcadas.indexOf("Nenhuma"), 1);
+
       const deficienciasMarcadas = Array.from(checkboxesDeficiencias).filter(cb => cb.checked).map(cb => cb.value);
       if (deficienciasMarcadas.length > 1 && deficienciasMarcadas.includes("Nenhuma")) deficienciasMarcadas.splice(deficienciasMarcadas.indexOf("Nenhuma"), 1);
-      const sessaoAtualizada = { ...sessao, nome, email, nascimento, sexo, genero, peso, altura, doencas: doencasMarcadas, deficiencias: deficienciasMarcadas };
+
+      const sessaoAtualizada = { ...sessao, nome, email, telefone, nascimento, sexo, genero, peso, altura, doencas: doencasMarcadas, deficiencias: deficienciasMarcadas };
+      
       const storageKey = "@medtriage/pacientes";
       const usuariosSalvos = JSON.parse(localStorage.getItem(storageKey)) || [];
       const index = usuariosSalvos.findIndex(u => u.id === sessao.id);
-      if (index !== -1) { usuariosSalvos[index] = sessaoAtualizada; localStorage.setItem(storageKey, JSON.stringify(usuariosSalvos)); }
+      
+      if (index !== -1) { 
+        usuariosSalvos[index] = sessaoAtualizada; 
+        localStorage.setItem(storageKey, JSON.stringify(usuariosSalvos)); 
+      }
+      
       localStorage.setItem("@medtriage/sessao", JSON.stringify(sessaoAtualizada));
       alert("Dados salvos com sucesso!");
       window.location.href = "paciente_dashboard.html";
@@ -588,7 +617,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         tipoConsulta = e.target.value;
         document.querySelectorAll('.tipo-consulta-grid .radio-card').forEach(card => card.classList.remove('selected'));
         e.target.closest('.radio-card').classList.add('selected');
-        // Atualiza o valor no resumo conforme o tipo escolhido
         if (tipoConsulta === "Presencial") {
           resumoValor.textContent = medico.preco;
         } else {
@@ -616,14 +644,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderizarHorarios();
     atualizarResumo();
   }
-    // Tela de Agendamento - Etapa 2
+
+  // Tela de Agendamento - Etapa 2
   const formEtapa2 = document.getElementById("form-etapa2");
   if (formEtapa2) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     if (!sessao) { window.location.replace("index.html"); return; }
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
 
-    // Recupera os dados escolhidos na Etapa 1
     const agendamentoTemp = JSON.parse(localStorage.getItem("@medtriage/agendamento-temp"));
     if (!agendamentoTemp) {
       alert("Nenhum agendamento em andamento. Volte para a busca.");
@@ -631,45 +659,36 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // Exibe os dados no resumo lateral
     document.getElementById("resumo-nome").textContent = agendamentoTemp.medicoNome;
     document.getElementById("resumo-especialidade").textContent = agendamentoTemp.especialidade;
     document.getElementById("resumo-tipo").textContent = agendamentoTemp.tipo;
     document.getElementById("resumo-valor").textContent = agendamentoTemp.valor;
 
-    // Formata a data (que está no formato YYYY-MM-DD)
     const dataObj = new Date(agendamentoTemp.data + "T00:00:00");
     const diaFormatado = String(dataObj.getDate()).padStart(2, "0");
     const mesFormatado = String(dataObj.getMonth() + 1).padStart(2, "0");
     document.getElementById("resumo-horario").textContent = `${diaFormatado}/${mesFormatado} às ${agendamentoTemp.horario}`;
 
-    // Lógica dos radio cards (para mudar a cor de seleção)
     const radiosEtapa2 = document.querySelectorAll('.tipo-consulta-grid .radio-card');
     radiosEtapa2.forEach(card => {
       card.addEventListener("click", (e) => {
-        // Encontra todos os cards do mesmo grupo (mesmo name)
         const input = card.querySelector('input');
         const nomeGrupo = input.getAttribute('name');
-        
         document.querySelectorAll(`input[name="${nomeGrupo}"]`).forEach(inp => {
           inp.closest('.radio-card').classList.remove('selected');
         });
-        
         card.classList.add('selected');
         input.checked = true;
       });
     });
 
-    // Ação do botão Avançar
     const btnAvancarEtapa2 = document.getElementById("btn-avancar-etapa2");
     btnAvancarEtapa2.addEventListener("click", () => {
-      // Coleta os valores selecionados
       const paraQuem = document.querySelector('input[name="para-quem"]:checked').value;
       const primeiraVez = document.querySelector('input[name="primeira-vez"]:checked').value;
       const convenio = document.getElementById("etapa2-convenio").value;
       const motivo = document.getElementById("etapa2-motivo").value.trim();
 
-      // Mescla os dados da Etapa 1 com os novos dados da Etapa 2
       const agendamentoCompleto = {
         ...agendamentoTemp,
         paraQuem: paraQuem,
@@ -678,20 +697,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         motivo: motivo
       };
 
-      // Salva para a Etapa 3 ler
       localStorage.setItem("@medtriage/agendamento-temp", JSON.stringify(agendamentoCompleto));
-      
       window.location.href = "agendar_etapa3.html";
     });
   }
-    // Tela de Agendamento - Etapa 3 (Revisão)
+
+  // Tela de Agendamento - Etapa 3 (Revisão)
   const btnConfirmar = document.getElementById("btn-confirmar");
   if (btnConfirmar) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     if (!sessao) { window.location.replace("index.html"); return; }
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
 
-    // Recupera os dados completos do agendamento (das etapas 1 e 2)
     const agendamento = JSON.parse(localStorage.getItem("@medtriage/agendamento-temp"));
     if (!agendamento) {
       alert("Nenhum agendamento em andamento. Volte para a busca.");
@@ -699,18 +716,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // Busca os dados completos do médico (para pegar o CRM e o endereço)
     const medicosAtualizados = obterMedicosAtualizados();
     const medico = medicosAtualizados.find(m => m.matricula === agendamento.medicoMatricula) || {};
 
-    // Formata a data (YYYY-MM-DD para DD/MM/YYYY)
     const dataObj = new Date(agendamento.data + "T00:00:00");
     const diaFormatado = String(dataObj.getDate()).padStart(2, "0");
     const mesFormatado = String(dataObj.getMonth() + 1).padStart(2, "0");
     const anoFormatado = dataObj.getFullYear();
     const dataFormatada = `${diaFormatado}/${mesFormatado}/${anoFormatado}`;
 
-    // Preenche os dados na tela
     document.getElementById("revisao-paciente").textContent = sessao.nome;
     document.getElementById("revisao-servico").textContent = `Consulta de ${agendamento.especialidade}`;
     document.getElementById("revisao-medico").textContent = agendamento.medicoNome;
@@ -722,16 +736,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("revisao-para-quem").textContent = agendamento.paraQuem;
     document.getElementById("revisao-valor").textContent = agendamento.valor;
 
-    // Se o motivo estiver vazio, esconde o campo
     if (agendamento.motivo && agendamento.motivo.trim() !== "") {
       document.getElementById("revisao-motivo").textContent = agendamento.motivo;
     } else {
       document.getElementById("revisao-motivo-container").style.display = "none";
     }
 
-    // Ação do botão Confirmar
     btnConfirmar.addEventListener("click", () => {
-      // Cria o objeto final do agendamento
       const consultaFinal = {
         id: Date.now(),
         pacienteId: sessao.id,
@@ -754,37 +765,29 @@ document.addEventListener("DOMContentLoaded", async () => {
         dataCriacao: new Date().toISOString()
       };
 
-      // Salva na lista de consultas do paciente
       const consultasSalvas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
       consultasSalvas.push(consultaFinal);
       localStorage.setItem("@medtriage/consultas", JSON.stringify(consultasSalvas));
 
-      // Limpa o agendamento temporário (já foi confirmado)
       localStorage.removeItem("@medtriage/agendamento-temp");
-
-      // Redireciona para a tela de sucesso
       window.location.href = "agendamento_sucesso.html";
     });
   }
-    // Tela de Agendamento com Sucesso
+
+  // Tela de Agendamento com Sucesso
   const btnOk = document.getElementById("btn-ok");
   if (btnOk) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     if (!sessao) { window.location.replace("index.html"); return; }
 
-    // Recupera a última consulta confirmada (a que acabou de ser salva)
     const consultasSalvas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
-    
     if (consultasSalvas.length === 0) {
       alert("Nenhuma consulta encontrada. Volte para o painel.");
       window.location.replace("paciente_dashboard.html");
       return;
     }
-
-    // Pega a última consulta da lista (a mais recente)
     const ultimaConsulta = consultasSalvas[consultasSalvas.length - 1];
 
-    // Preenche os dados da consulta na tela
     document.getElementById("sucesso-data").textContent = `${ultimaConsulta.dataFormatada} às ${ultimaConsulta.horario}`;
     document.getElementById("sucesso-medico").textContent = `${ultimaConsulta.medicoNome} • ${ultimaConsulta.especialidade}`;
     document.getElementById("sucesso-local").textContent = ultimaConsulta.tipo === "Teleconsulta" 
@@ -792,34 +795,79 @@ document.addEventListener("DOMContentLoaded", async () => {
       : ultimaConsulta.endereco;
     document.getElementById("sucesso-valor").textContent = ultimaConsulta.valor;
 
-    // Preenche as opções de contato com os dados do paciente
-    document.getElementById("detalhe-email").textContent = sessao.email || "E-mail não cadastrado";
-    document.getElementById("detalhe-whatsapp").textContent = sessao.telefone || "(00) 00000-0000";
+    const emailPaciente = (sessao.email || "").trim();
+    const telefonePaciente = (sessao.telefone || "").trim();
+    const temEmail = emailPaciente !== "";
+    const temTelefone = telefonePaciente !== "";
 
-    // Lógica visual dos radio cards (para mudar o destaque ao clicar)
+    const detalheEmail = document.getElementById("detalhe-email");
+    const detalheWhatsApp = document.getElementById("detalhe-whatsapp");
+    const cardEmail = document.getElementById("opcao-email");
+    const cardWhatsApp = document.getElementById("opcao-whatsapp");
+    const avisoSemContato = document.getElementById("aviso-sem-contato");
+    const inputEmail = cardEmail.querySelector("input");
+    const inputWhatsApp = cardWhatsApp.querySelector("input");
+
+    if (temEmail) {
+      detalheEmail.textContent = emailPaciente;
+    } else {
+      detalheEmail.textContent = "Nenhum e-mail cadastrado";
+      cardEmail.style.opacity = "0.5";
+      cardEmail.style.pointerEvents = "none";
+      inputEmail.disabled = true;
+    }
+
+    if (temTelefone) {
+      detalheWhatsApp.textContent = telefonePaciente;
+    } else {
+      detalheWhatsApp.textContent = "Nenhum telefone cadastrado";
+      cardWhatsApp.style.opacity = "0.5";
+      cardWhatsApp.style.pointerEvents = "none";
+      inputWhatsApp.disabled = true;
+    }
+
+    if (temEmail && temTelefone) {
+      cardEmail.classList.add("selected");
+      inputEmail.checked = true;
+      btnOk.disabled = false;
+    } else if (temEmail) {
+      cardEmail.classList.add("selected");
+      inputEmail.checked = true;
+      btnOk.disabled = false;
+    } else if (temTelefone) {
+      cardWhatsApp.classList.add("selected");
+      inputWhatsApp.checked = true;
+      btnOk.disabled = false;
+    } else {
+      avisoSemContato.style.display = "block";
+      btnOk.disabled = true;
+    }
+
     const opcoesConfirmacao = document.querySelectorAll('.sucesso-opcoes .radio-card');
     opcoesConfirmacao.forEach(card => {
       card.addEventListener("click", () => {
+        const input = card.querySelector('input[type="radio"]');
+        if (input.disabled) return;
         opcoesConfirmacao.forEach(c => c.classList.remove("selected"));
         card.classList.add("selected");
-        card.querySelector('input[type="radio"]').checked = true;
+        input.checked = true;
+        btnOk.disabled = false;
       });
     });
 
-    // Ação do botão OK
     btnOk.addEventListener("click", () => {
-      // Salva a preferência de contato na consulta
-      const metodoEscolhido = document.querySelector('input[name="metodo-confirmacao"]:checked').value;
-      
+      const inputMarcado = document.querySelector('input[name="metodo-confirmacao"]:checked');
+      if (!inputMarcado) {
+        alert("Escolha como deseja receber a confirmação.");
+        return;
+      }
+      const metodoEscolhido = inputMarcado.value;
       const consultasAtualizadas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
       const indexUltima = consultasAtualizadas.length - 1;
-      
       if (indexUltima >= 0) {
         consultasAtualizadas[indexUltima].metodoConfirmacao = metodoEscolhido;
         localStorage.setItem("@medtriage/consultas", JSON.stringify(consultasAtualizadas));
       }
-
-      // Redireciona para o painel do paciente
       window.location.href = "paciente_dashboard.html";
     });
   }

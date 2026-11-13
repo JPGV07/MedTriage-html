@@ -8,7 +8,6 @@
 </head>
 <body>
 
-  <!-- Header Padrão do Paciente -->
   <header class="patient-header">
     <div class="patient-header-container">
       <div class="brand" style="margin-bottom: 0;">
@@ -21,7 +20,7 @@
 
       <nav class="patient-nav">
         <a href="paciente_dashboard.html">Início</a>
-        <a href="#">Agendar consulta</a>
+        <a href="buscar_especialista.html">Agendar consulta</a>
         <a href="#">Histórico de laudos</a>
       </nav>
 
@@ -32,7 +31,6 @@
     </div>
   </header>
 
-  <!-- Conteúdo Principal -->
   <main class="dashboard-main">
     
     <div class="welcome-section">
@@ -42,7 +40,7 @@
 
     <form id="form-meus-dados" class="card-dados">
       
-      <!-- SEÇÃO 1: DADOS BÁSICOS -->
+      <!-- Seção 1: Dados Básicos -->
       <h2 class="section-title">Dados Básicos</h2>
       <div class="form-grid">
         
@@ -53,13 +51,17 @@
 
         <div class="input-group">
           <label for="dados-cpf">CPF (Não editável)</label>
-          <!-- Atributo 'readonly' impede que o usuário altere o CPF -->
           <input type="text" id="dados-cpf" readonly style="background-color: #e2e8f0; cursor: not-allowed;">
         </div>
 
         <div class="input-group">
           <label for="dados-email">E-mail</label>
           <input type="email" id="dados-email" placeholder="nome@exemplo.com">
+        </div>
+
+        <div class="input-group">
+          <label for="dados-telefone">Telefone / WhatsApp (opcional)</label>
+          <input type="text" id="dados-telefone" placeholder="(00) 00000-0000">
         </div>
 
         <div class="input-group">
@@ -101,7 +103,7 @@
 
       </div>
 
-      <!-- SEÇÃO 2: CONDIÇÕES DE SAÚDE -->
+      <!-- Seção 2: Condições de Saúde -->
       <h2 class="section-title" style="margin-top: 32px;">Condições de Saúde</h2>
       <p class="helper-text" style="margin-bottom: 16px;">Marque se você possui alguma dessas condições:</p>
       
@@ -114,7 +116,7 @@
         <label><input type="checkbox" value="Nenhuma" class="check-doenca"> Nenhuma</label>
       </div>
 
-      <!-- SEÇÃO 3: DEFICIÊNCIAS -->
+      <!-- Seção 3: Deficiências -->
       <h2 class="section-title" style="margin-top: 32px;">Deficiências</h2>
       <p class="helper-text" style="margin-bottom: 16px;">Marque se você é portador(a) de alguma deficiência:</p>
       
@@ -126,7 +128,7 @@
         <label><input type="checkbox" value="Nenhuma" class="check-deficiencia"> Nenhuma</label>
       </div>
 
-      <!-- BOTÕES -->
+      <!-- Botões -->
       <div style="display: flex; gap: 16px; margin-top: 40px;">
         <button type="submit" class="btn btn-primary" style="width: auto;">Salvar Alterações</button>
         <a href="paciente_dashboard.html" class="btn btn-outline" style="width: auto;">Voltar para o Painel</a>

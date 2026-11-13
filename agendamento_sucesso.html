@@ -53,14 +53,17 @@
         <p class="sucesso-pergunta">Como você quer receber a confirmação?</p>
         
         <div class="sucesso-opcoes">
-          <label class="radio-card selected" id="opcao-email">
-            <input type="radio" name="metodo-confirmacao" value="email" checked>
+          
+          <!-- Opção de E-mail (sem checked, o JS controla) -->
+          <label class="radio-card" id="opcao-email">
+            <input type="radio" name="metodo-confirmacao" value="email">
             <div class="opcao-conteudo">
               <span class="opcao-titulo">Por e-mail</span>
               <span class="opcao-detalhe" id="detalhe-email">nome@exemplo.com</span>
             </div>
           </label>
 
+          <!-- Opção de WhatsApp (sem checked, o JS controla) -->
           <label class="radio-card" id="opcao-whatsapp">
             <input type="radio" name="metodo-confirmacao" value="whatsapp">
             <div class="opcao-conteudo">
@@ -68,7 +71,15 @@
               <span class="opcao-detalhe" id="detalhe-whatsapp">Telefone ou WhatsApp</span>
             </div>
           </label>
+
         </div>
+
+        <!-- Aviso caso não tenha contato cadastrado -->
+        <p id="aviso-sem-contato" style="display: none; margin-top: 12px; font-size: 13px; color: #B45309; background: #FEF3C7; padding: 8px 12px; border-radius: 6px;">
+          Você ainda não tem e-mail ou telefone cadastrado. 
+          <a href="meus_dados.html" style="color: var(--primary); font-weight: 600;">Cadastre agora</a> 
+          para receber a confirmação.
+        </p>
       </div>
 
       <!-- Botão OK -->
