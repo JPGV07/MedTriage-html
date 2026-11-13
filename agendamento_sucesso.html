@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consulta Marcada - MedTriage</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="sucesso-wrapper">
+    <div class="sucesso-card">
+      
+      <!-- Ícone de sucesso (check em círculo) -->
+      <div class="sucesso-icone">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="2"/>
+          <path d="M7 12l3.5 3.5L17 9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <!-- Título e subtítulo -->
+      <h1 class="sucesso-titulo">Consulta marcada!</h1>
+      <p class="sucesso-subtitulo">Seu agendamento foi confirmado com sucesso.</p>
+
+      <!-- Bloco com os dados da consulta -->
+      <div class="sucesso-dados">
+        
+        <div class="sucesso-dado-item">
+          <label>Data e horário</label>
+          <p id="sucesso-data">-</p>
+        </div>
+
+        <div class="sucesso-dado-item">
+          <label>Médico</label>
+          <p id="sucesso-medico">-</p>
+        </div>
+
+        <div class="sucesso-dado-item">
+          <label>Local</label>
+          <p id="sucesso-local">-</p>
+        </div>
+
+        <div class="sucesso-dado-item">
+          <label>Valor</label>
+          <p id="sucesso-valor">-</p>
+        </div>
+
+      </div>
+
+      <!-- Escolha de como receber a confirmação -->
+      <div class="sucesso-confirmacao">
+        <p class="sucesso-pergunta">Como você quer receber a confirmação?</p>
+        
+        <div class="sucesso-opcoes">
+          <label class="radio-card selected" id="opcao-email">
+            <input type="radio" name="metodo-confirmacao" value="email" checked>
+            <div class="opcao-conteudo">
+              <span class="opcao-titulo">Por e-mail</span>
+              <span class="opcao-detalhe" id="detalhe-email">nome@exemplo.com</span>
+            </div>
+          </label>
+
+          <label class="radio-card" id="opcao-whatsapp">
+            <input type="radio" name="metodo-confirmacao" value="whatsapp">
+            <div class="opcao-conteudo">
+              <span class="opcao-titulo">Por contato</span>
+              <span class="opcao-detalhe" id="detalhe-whatsapp">Telefone ou WhatsApp</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Botão OK -->
+      <button id="btn-ok" class="btn btn-primary btn-sucesso">OK</button>
+
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

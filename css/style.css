@@ -1292,3 +1292,157 @@ body {
     padding: 24px;
   }
 }
+/* Tela de Agendamento com Sucesso */
+.sucesso-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-body);
+  padding: 24px;
+}
+
+.sucesso-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.sucesso-icone {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  color: var(--primary);
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F0F9FF;
+}
+
+.sucesso-icone svg {
+  width: 56px;
+  height: 56px;
+}
+
+.sucesso-titulo {
+  font-size: 26px;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.sucesso-subtitulo {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+.sucesso-dados {
+  background: var(--bg-body);
+  border-radius: 12px;
+  padding: 20px 24px;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.sucesso-dado-item {
+  margin-bottom: 12px;
+}
+
+.sucesso-dado-item:last-child {
+  margin-bottom: 0;
+}
+
+.sucesso-dado-item label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.sucesso-dado-item p {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.sucesso-confirmacao {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.sucesso-pergunta {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 12px;
+}
+
+.sucesso-opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sucesso-opcoes .radio-card {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--bg-surface);
+  transition: all 0.2s;
+}
+
+.sucesso-opcoes .radio-card.selected {
+  border-color: var(--primary);
+  background: #F0F9FF;
+}
+
+.sucesso-opcoes input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+.opcao-conteudo {
+  display: flex;
+  flex-direction: column;
+}
+
+.opcao-titulo {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.opcao-detalhe {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.btn-sucesso {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+}
+
+@media (max-width: 480px) {
+  .sucesso-card {
+    padding: 24px;
+  }
+  .sucesso-titulo {
+    font-size: 22px;
+  }
+}

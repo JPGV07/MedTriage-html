@@ -766,4 +766,61 @@ document.addEventListener("DOMContentLoaded", async () => {
       window.location.href = "agendamento_sucesso.html";
     });
   }
+    // Tela de Agendamento com Sucesso
+  const btnOk = document.getElementById("btn-ok");
+  if (btnOk) {
+    const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
+    if (!sessao) { window.location.replace("index.html"); return; }
+
+    // Recupera a última consulta confirmada (a que acabou de ser salva)
+    const consultasSalvas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
+    
+    if (consultasSalvas.length === 0) {
+      alert("Nenhuma consulta encontrada. Volte para o painel.");
+      window.location.replace("paciente_dashboard.html");
+      return;
+    }
+
+    // Pega a última consulta da lista (a mais recente)
+    const ultimaConsulta = consultasSalvas[consultasSalvas.length - 1];
+
+    // Preenche os dados da consulta na tela
+    document.getElementById("sucesso-data").textContent = `${ultimaConsulta.dataFormatada} às ${ultimaConsulta.horario}`;
+    document.getElementById("sucesso-medico").textContent = `${ultimaConsulta.medicoNome} • ${ultimaConsulta.especialidade}`;
+    document.getElementById("sucesso-local").textContent = ultimaConsulta.tipo === "Teleconsulta" 
+      ? "Teleconsulta (online)" 
+      : ultimaConsulta.endereco;
+    document.getElementById("sucesso-valor").textContent = ultimaConsulta.valor;
+
+    // Preenche as opções de contato com os dados do paciente
+    document.getElementById("detalhe-email").textContent = sessao.email || "E-mail não cadastrado";
+    document.getElementById("detalhe-whatsapp").textContent = sessao.telefone || "(00) 00000-0000";
+
+    // Lógica visual dos radio cards (para mudar o destaque ao clicar)
+    const opcoesConfirmacao = document.querySelectorAll('.sucesso-opcoes .radio-card');
+    opcoesConfirmacao.forEach(card => {
+      card.addEventListener("click", () => {
+        opcoesConfirmacao.forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        card.querySelector('input[type="radio"]').checked = true;
+      });
+    });
+
+    // Ação do botão OK
+    btnOk.addEventListener("click", () => {
+      // Salva a preferência de contato na consulta
+      const metodoEscolhido = document.querySelector('input[name="metodo-confirmacao"]:checked').value;
+      
+      const consultasAtualizadas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
+      const indexUltima = consultasAtualizadas.length - 1;
+      
+      if (indexUltima >= 0) {
+        consultasAtualizadas[indexUltima].metodoConfirmacao = metodoEscolhido;
+        localStorage.setItem("@medtriage/consultas", JSON.stringify(consultasAtualizadas));
+      }
+
+      // Redireciona para o painel do paciente
+      window.location.href = "paciente_dashboard.html";
+    });
+  }
 });
