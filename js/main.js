@@ -6,19 +6,19 @@ async function hashPassword(password) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Banco de dados simulado de médicos
+// Banco de dados estático de médicos (usado para popular o banco na primeira vez)
 const dbMedicos = [
-  { id: 1, nome: "Dr. Carlos Silva", especialidade: "Oftalmologista", cidade: "João Pessoa", crm: "CRM-PB 12345", matricula: "MED1001", senha: "senha123", rating: 4.9, avaliacoes: 35, preco: "R$ 250,00", rua: "Av. Epitácio Pessoa, 1000" },
-  { id: 2, nome: "Dra. Beatriz Nogueira", especialidade: "Oftalmologista", cidade: "Campina Grande", crm: "CRM-PB 12346", matricula: "MED1002", senha: "senha123", rating: 4.8, avaliacoes: 22, preco: "R$ 240,00", rua: "Rua Maciel Pinheiro, 150" },
-  { id: 3, nome: "Dra. Ana Costa", especialidade: "Cardiologista", cidade: "João Pessoa", crm: "CRM-PB 54321", matricula: "MED2001", senha: "senha123", rating: 4.9, avaliacoes: 50, preco: "R$ 300,00", rua: "Rua das Palmeiras, 450" },
-  { id: 4, nome: "Dr. Ricardo Dias", especialidade: "Cardiologista", cidade: "Campina Grande", crm: "CRM-PB 54322", matricula: "MED2002", senha: "senha123", rating: 4.7, avaliacoes: 18, preco: "R$ 280,00", rua: "Av. Marechal Floriano, 300" },
-  { id: 5, nome: "Dr. Roberto Alves", especialidade: "Dermatologista", cidade: "João Pessoa", crm: "CRM-PB 98765", matricula: "MED3001", senha: "senha123", rating: 4.8, avaliacoes: 30, preco: "R$ 200,00", rua: "Av. Nossa Senhora de Lourdes, 200" },
-  { id: 6, nome: "Dra. Camila Ferreira", especialidade: "Dermatologista", cidade: "Campina Grande", crm: "CRM-PB 98766", matricula: "MED3002", senha: "senha123", rating: 4.6, avaliacoes: 12, preco: "R$ 190,00", rua: "Rua Treze de Maio, 80" },
-  { id: 7, nome: "Dra. Juliana Mendes", especialidade: "Clínico geral", cidade: "João Pessoa", crm: "CRM-PB 11122", matricula: "MED4001", senha: "senha123", rating: 4.9, avaliacoes: 60, preco: "R$ 150,00", rua: "Rua da Areia, 300" },
-  { id: 8, nome: "Dr. Paulo Henrique", especialidade: "Clínico geral", cidade: "Campina Grande", crm: "CRM-PB 11123", matricula: "MED4002", senha: "senha123", rating: 4.7, avaliacoes: 25, preco: "R$ 140,00", rua: "Rua Venâncio Neiva, 500" }
+  { id: 1, nome: "Dr. Carlos Silva", especialidade: "Oftalmologista", cidade: "João Pessoa", crm: "CRM-PB 12345", matricula: "MED1001", senha: "senha123", rating: 4.9, avaliacoes: 35, preco: "R$ 250,00", rua: "Av. Epitácio Pessoa, 1000", bio: "Médico oftalmologista com 15 anos de experiência em cirurgias de catarata e refrativas." },
+  { id: 2, nome: "Dra. Beatriz Nogueira", especialidade: "Oftalmologista", cidade: "Campina Grande", crm: "CRM-PB 12346", matricula: "MED1002", senha: "senha123", rating: 4.8, avaliacoes: 22, preco: "R$ 240,00", rua: "Rua Maciel Pinheiro, 150", bio: "Especialista em doenças da retina e glaucoma. Atendimento humanizado." },
+  { id: 3, nome: "Dra. Ana Costa", especialidade: "Cardiologista", cidade: "João Pessoa", crm: "CRM-PB 54321", matricula: "MED2001", senha: "senha123", rating: 4.9, avaliacoes: 50, preco: "R$ 300,00", rua: "Rua das Palmeiras, 450", bio: "Cardiologista intervencionista com foco em prevenção." },
+  { id: 4, nome: "Dr. Ricardo Dias", especialidade: "Cardiologista", cidade: "Campina Grande", crm: "CRM-PB 54322", matricula: "MED2002", senha: "senha123", rating: 4.7, avaliacoes: 18, preco: "R$ 280,00", rua: "Av. Marechal Floriano, 300", bio: "Especialista em arritmias cardíacas e check-up completo." },
+  { id: 5, nome: "Dr. Roberto Alves", especialidade: "Dermatologista", cidade: "João Pessoa", crm: "CRM-PB 98765", matricula: "MED3001", senha: "senha123", rating: 4.8, avaliacoes: 30, preco: "R$ 200,00", rua: "Av. Nossa Senhora de Lourdes, 200", bio: "Dermatologista clínico e estético." },
+  { id: 6, nome: "Dra. Camila Ferreira", especialidade: "Dermatologista", cidade: "Campina Grande", crm: "CRM-PB 98766", matricula: "MED3002", senha: "senha123", rating: 4.6, avaliacoes: 12, preco: "R$ 190,00", rua: "Rua Treze de Maio, 80", bio: "Focada em dermatologia pediátrica e tratamento de acne." },
+  { id: 7, nome: "Dra. Juliana Mendes", especialidade: "Clínico geral", cidade: "João Pessoa", crm: "CRM-PB 11122", matricula: "MED4001", senha: "senha123", rating: 4.9, avaliacoes: 60, preco: "R$ 150,00", rua: "Rua da Areia, 300", bio: "Clínica geral com abordagem holística e preventiva." },
+  { id: 8, nome: "Dr. Paulo Henrique", especialidade: "Clínico geral", cidade: "Campina Grande", crm: "CRM-PB 11123", matricula: "MED4002", senha: "senha123", rating: 4.7, avaliacoes: 25, preco: "R$ 140,00", rua: "Rua Venâncio Neiva, 500", bio: "Atende adultos e idosos, especializado em geriatria." }
 ];
 
-// Banco de dados simulado de pacientes (para a tabela do médico)
+// Banco de dados simulado de pacientes
 const dbPacientesTabela = [
   { nome: "Maria da Silva", cpf: "123.***.**-**", ultimoAtendimento: "15/10/2023" },
   { nome: "José Almeida", cpf: "456.***.**-**", ultimoAtendimento: "10/10/2023" },
@@ -26,25 +26,46 @@ const dbPacientesTabela = [
   { nome: "Carlos Pereira", cpf: "321.***.**-**", ultimoAtendimento: "28/09/2023" }
 ];
 
+// Função que mescla os dados estáticos com os dados atualizados pelo médico
+// Isso garante que se o médico alterar o preço, o novo preço aparece na busca e no perfil
+function obterMedicosAtualizados() {
+  const profissionaisSalvos = JSON.parse(localStorage.getItem("@medtriage/profissionais")) || [];
+  
+  return dbMedicos.map(medicoEstatico => {
+    const medicoAtualizado = profissionaisSalvos.find(p => p.id === medicoEstatico.matricula);
+    
+    if (medicoAtualizado) {
+      return {
+        ...medicoEstatico,
+        nome: medicoAtualizado.nome || medicoEstatico.nome,
+        cidade: medicoAtualizado.cidade || medicoEstatico.cidade,
+        rua: medicoAtualizado.rua || medicoEstatico.rua,
+        preco: medicoAtualizado.preco || medicoEstatico.preco
+      };
+    }
+    return medicoEstatico;
+  });
+}
+
+// Função global para salvar o médico selecionado e ir para o perfil
+window.salvarMedicoSelecionado = function(matricula) {
+  localStorage.setItem("@medtriage/medico-selecionado", matricula);
+  window.location.href = "perfil_medico.html";
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
   
   let perfilAtivo = "paciente"; 
 
-  // Semeia o banco de profissionais (incluindo cidade, rua e preço)
+  // Semeia o banco de profissionais
   const profissionaisSalvos = JSON.parse(localStorage.getItem("@medtriage/profissionais"));
   if (!profissionaisSalvos || profissionaisSalvos.length === 0) {
     const profissionaisParaSalvar = [];
     for (const med of dbMedicos) {
       const hash = await hashPassword(med.senha);
       profissionaisParaSalvar.push({ 
-        id: med.matricula, 
-        nome: med.nome, 
-        senhaHash: hash, 
-        crm: med.crm, 
-        especialidade: med.especialidade,
-        cidade: med.cidade,
-        rua: med.rua,
-        preco: med.preco
+        id: med.matricula, nome: med.nome, senhaHash: hash, crm: med.crm, 
+        especialidade: med.especialidade, cidade: med.cidade, rua: med.rua, preco: med.preco 
       });
     }
     localStorage.setItem("@medtriage/profissionais", JSON.stringify(profissionaisParaSalvar));
@@ -56,7 +77,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     btn.addEventListener("click", (e) => {
       const wrapper = e.currentTarget.closest('.input-wrapper');
       const input = wrapper.querySelector('input');
-      
       if (input.type === "password") {
         input.type = "text";
         e.currentTarget.style.opacity = "1";
@@ -118,7 +138,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("login-form").addEventListener("submit", async (e) => {
       e.preventDefault();
-
       let tentativas = parseInt(localStorage.getItem("@medtriage/tentativas") || "0");
       if (tentativas >= 5) {
         const querRedefinir = confirm("Acesso bloqueado! Você excedeu o limite de 5 tentativas erradas.\n\nDeseja redefinir sua senha agora?");
@@ -136,7 +155,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       
       const usuarioCadastrado = usuariosSalvos.find(u => u.id === idDigitado);
       if (!usuarioCadastrado) {
-        return alert(`Erro: ${perfilAtivo === "paciente" ? "CPF" : "Matrícula"} não encontrado(a). Verifique os dados ou crie uma conta.`);
+        return alert(`Erro: ${perfilAtivo === "paciente" ? "CPF" : "Matrícula"} não encontrado(a).`);
       }
 
       const senhaHash = await hashPassword(senhaDigitada);
@@ -144,17 +163,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (usuarioCadastrado.senhaHash === senhaHash) {
         localStorage.setItem("@medtriage/tentativas", "0");
         localStorage.setItem("@medtriage/sessao", JSON.stringify(usuarioCadastrado));
-        
-        if (perfilAtivo === "paciente") {
-          window.location.href = "paciente_dashboard.html"; 
-        } else {
-          window.location.href = "medico_dashboard.html"; 
-        }
+        window.location.href = perfilAtivo === "paciente" ? "paciente_dashboard.html" : "medico_dashboard.html"; 
       } else {
         tentativas++;
         localStorage.setItem("@medtriage/tentativas", tentativas.toString());
         if (tentativas >= 5) {
-          alert("Você errou 5 vezes! O acesso foi bloqueado. Clique em OK e tente novamente para redefinir sua senha.");
+          alert("Você errou 5 vezes! O acesso foi bloqueado.");
         } else {
           alert(`Erro: Senha incorreta. Você tem ${5 - tentativas} tentativas restantes.`);
         }
@@ -166,7 +180,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const formCadastro = document.getElementById("cadastro-form");
   if (formCadastro) {
     const inputCadastroId = document.getElementById("input-cadastro-id");
-    
     inputCadastroId.addEventListener("input", function (e) {
       let valor = e.target.value.replace(/\D/g, "").substring(0, 11);
       valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
@@ -177,7 +190,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     formCadastro.addEventListener("submit", async (e) => {
       e.preventDefault();
-
       const nome = document.getElementById("nome-cadastro").value.trim();
       const idValue = inputCadastroId.value.trim();
       const senha = document.getElementById("nova-senha").value;
@@ -188,33 +200,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (senha !== repetir) return alert("Erro: As senhas não coincidem!");
       if (senha.length < 6) return alert("Erro: A senha precisa ter pelo menos 6 caracteres.");
       if (idValue.length < 14) return alert("Erro: CPF incompleto.");
-      
-      if (email !== "") {
-        const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!regexEmail.test(email)) return alert("Erro: Insira um e-mail válido.");
-      }
+      if (email !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert("Erro: E-mail inválido.");
 
       const storageKey = "@medtriage/pacientes";
       const usuariosSalvos = JSON.parse(localStorage.getItem(storageKey)) || [];
-
-      if (usuariosSalvos.some(user => user.id === idValue)) {
-        return alert("Erro: Este CPF já possui cadastro.");
-      }
+      if (usuariosSalvos.some(user => user.id === idValue)) return alert("Erro: Este CPF já possui cadastro.");
 
       const senhaHash = await hashPassword(senha);
-      
-      const novoUsuario = { 
-        id: idValue, nome: nome, senhaHash: senhaHash, email: email,
-        nascimento: "", sexo: "", genero: "", peso: "", altura: "", doencas: [], deficiencias: []
-      };
+      const novoUsuario = { id: idValue, nome, senhaHash, email, nascimento: "", sexo: "", genero: "", peso: "", altura: "", doencas: [], deficiencias: [] };
       
       usuariosSalvos.push(novoUsuario);
       localStorage.setItem(storageKey, JSON.stringify(usuariosSalvos));
-
       localStorage.setItem("@medtriage/tentativas", "0");
       localStorage.setItem("@medtriage/sessao", JSON.stringify(novoUsuario));
       
-      alert("Conta criada com sucesso! Bem-vindo(a).");
+      alert("Conta criada com sucesso!");
       window.location.href = "paciente_dashboard.html"; 
     });
   }
@@ -252,29 +252,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       const repetirSenha = document.getElementById("repetir-senha-recuperar").value;
 
       if (novaSenha !== repetirSenha) return alert("Erro: As senhas não coincidem!");
-      if (novaSenha.length < 6) return alert("Erro: A senha precisa ter pelo menos 6 caracteres.");
+      if (novaSenha.length < 6) return alert("Erro: A senha é muito curta.");
 
       const storageKey = perfilReset === "paciente" ? "@medtriage/pacientes" : "@medtriage/profissionais";
       const usuariosSalvos = JSON.parse(localStorage.getItem(storageKey)) || [];
       const indexUsuario = usuariosSalvos.findIndex(u => u.id === idRecuperar);
       
-      if (indexUsuario === -1) {
-        return alert(`Erro: ${perfilReset === "paciente" ? "CPF" : "Matrícula"} não encontrado. Verifique os dados.`);
-      }
+      if (indexUsuario === -1) return alert(`Erro: ${perfilReset === "paciente" ? "CPF" : "Matrícula"} não encontrado.`);
 
       const novoHash = await hashPassword(novaSenha);
       usuariosSalvos[indexUsuario].senhaHash = novoHash;
       localStorage.setItem(storageKey, JSON.stringify(usuariosSalvos));
-      
       localStorage.setItem("@medtriage/tentativas", "0");
       localStorage.removeItem("@medtriage/reset-perfil"); 
 
-      alert("Senha redefinida com sucesso! Você já pode fazer login com a nova senha.");
+      alert("Senha redefinida com sucesso!");
       window.location.href = "index.html";
     });
   }
 
-  // Botão Logout Funciona em todas as telas
+  // Botão Logout
   const btnLogout = document.getElementById("btn-logout");
   if (btnLogout) {
     btnLogout.addEventListener("click", (e) => {
@@ -294,10 +291,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       window.location.replace("index.html");
       return;
     }
-
     welcomeTitle.textContent = `Olá, ${sessao.nome || 'Paciente'}`;
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome || 'Paciente'}`;
-    
     if(document.getElementById("info-nome")) {
       document.getElementById("info-nome").textContent = sessao.nome || "Não informado";
       document.getElementById("info-cpf").textContent = sessao.id;
@@ -309,11 +304,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const formMeusDados = document.getElementById("form-meus-dados");
   if (formMeusDados) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
-    if (!sessao) {
-      alert("Acesso negado. Faça login primeiro.");
-      window.location.replace("index.html");
-      return;
-    }
+    if (!sessao) { window.location.replace("index.html"); return; }
 
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
     document.getElementById("dados-nome").value = sessao.nome || "";
@@ -327,7 +318,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const checkboxesDoencas = document.querySelectorAll(".check-doenca");
     checkboxesDoencas.forEach(cb => { cb.checked = (sessao.doencas || []).includes(cb.value); });
-
     const checkboxesDeficiencias = document.querySelectorAll(".check-deficiencia");
     checkboxesDeficiencias.forEach(cb => { cb.checked = (sessao.deficiencias || []).includes(cb.value); });
 
@@ -342,24 +332,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       const altura = document.getElementById("dados-altura").value;
 
       const doencasMarcadas = Array.from(checkboxesDoencas).filter(cb => cb.checked).map(cb => cb.value);
-      if (doencasMarcadas.length > 1 && doencasMarcadas.includes("Nenhuma")) {
-        doencasMarcadas.splice(doencasMarcadas.indexOf("Nenhuma"), 1);
-      }
-
+      if (doencasMarcadas.length > 1 && doencasMarcadas.includes("Nenhuma")) doencasMarcadas.splice(doencasMarcadas.indexOf("Nenhuma"), 1);
+      
       const deficienciasMarcadas = Array.from(checkboxesDeficiencias).filter(cb => cb.checked).map(cb => cb.value);
-      if (deficienciasMarcadas.length > 1 && deficienciasMarcadas.includes("Nenhuma")) {
-        deficienciasMarcadas.splice(deficienciasMarcadas.indexOf("Nenhuma"), 1);
-      }
+      if (deficienciasMarcadas.length > 1 && deficienciasMarcadas.includes("Nenhuma")) deficienciasMarcadas.splice(deficienciasMarcadas.indexOf("Nenhuma"), 1);
 
       const sessaoAtualizada = { ...sessao, nome, email, nascimento, sexo, genero, peso, altura, doencas: doencasMarcadas, deficiencias: deficienciasMarcadas };
       const storageKey = "@medtriage/pacientes";
       const usuariosSalvos = JSON.parse(localStorage.getItem(storageKey)) || [];
       const index = usuariosSalvos.findIndex(u => u.id === sessao.id);
       
-      if (index !== -1) {
-        usuariosSalvos[index] = sessaoAtualizada;
-        localStorage.setItem(storageKey, JSON.stringify(usuariosSalvos));
-      }
+      if (index !== -1) { usuariosSalvos[index] = sessaoAtualizada; localStorage.setItem(storageKey, JSON.stringify(usuariosSalvos)); }
       localStorage.setItem("@medtriage/sessao", JSON.stringify(sessaoAtualizada));
 
       alert("Dados salvos com sucesso!");
@@ -371,17 +354,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   const listaMedicos = document.getElementById("lista-medicos");
   if (listaMedicos) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
-    if (!sessao || sessao.id.includes("MED")) {
-      alert("Acesso negado. Faça login como paciente.");
-      window.location.replace("index.html");
-      return;
-    }
+    if (!sessao || sessao.id.includes("MED")) { window.location.replace("index.html"); return; }
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
 
     const filtroEspecialidade = document.getElementById("filtro-especialidade");
     const filtroCidade = document.getElementById("filtro-cidade");
     const btnBuscar = document.getElementById("btn-buscar");
     const tituloResultados = document.getElementById("titulo-resultados");
+
+    // Aqui usamos a função que pega os dados atualizados (com preço/nome/rua que o médico possa ter alterado)
+    const medicosAtualizados = obterMedicosAtualizados();
 
     const renderizarMedicos = (medicos) => {
       listaMedicos.innerHTML = "";
@@ -412,7 +394,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           </div>
           <div class="doctor-action">
             <p class="price">A partir de ${medico.preco}</p>
-            <button class="btn btn-primary" onclick="alert('Próxima etapa: Escolher data e horário com ${medico.nome}')">Agendar Consulta</button>
+            <button class="btn btn-primary" onclick="salvarMedicoSelecionado('${medico.matricula}')">Agendar Consulta</button>
           </div>
         `;
         listaMedicos.appendChild(card);
@@ -422,7 +404,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     btnBuscar.addEventListener("click", () => {
       const esp = filtroEspecialidade.value;
       const cid = filtroCidade.value;
-      const filtrados = dbMedicos.filter(m => {
+      const filtrados = medicosAtualizados.filter(m => {
         const matchEsp = esp === "Todas" || m.especialidade === esp;
         const matchCid = m.cidade === cid;
         return matchEsp && matchCid;
@@ -430,109 +412,103 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderizarMedicos(filtrados);
     });
 
-    renderizarMedicos(dbMedicos.filter(m => m.cidade === "João Pessoa"));
+    renderizarMedicos(medicosAtualizados.filter(m => m.cidade === "João Pessoa"));
   }
 
   // Tela Dashboard do Médico
   const tabelaMedico = document.getElementById("tabela-pacientes-body");
   if (tabelaMedico) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
-    
-    if (!sessao || !sessao.id.includes("MED")) {
-      alert("Acesso negado. Faça login como profissional.");
-      window.location.replace("index.html");
-      return;
-    }
+    if (!sessao || !sessao.id.includes("MED")) { window.location.replace("index.html"); return; }
 
     document.getElementById("welcome-title").textContent = `Olá, ${sessao.nome}`;
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
 
     const renderizarTabela = (pacientes) => {
       tabelaMedico.innerHTML = "";
-      if(pacientes.length === 0) {
-        tabelaMedico.innerHTML = "<tr><td colspan='4' style='text-align:center; color:var(--text-muted);'>Nenhum paciente encontrado.</td></tr>";
-        return;
-      }
-      
+      if(pacientes.length === 0) { tabelaMedico.innerHTML = "<tr><td colspan='4' style='text-align:center; color:var(--text-muted);'>Nenhum paciente encontrado.</td></tr>"; return; }
       pacientes.forEach(p => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${p.nome}</td>
-          <td>${p.cpf}</td>
-          <td>${p.ultimoAtendimento}</td>
-          <td><a href="#" class="action-link" onclick="alert('Ver histórico de ${p.nome}')">Ver histórico</a></td>
-        `;
+        tr.innerHTML = `<td>${p.nome}</td><td>${p.cpf}</td><td>${p.ultimoAtendimento}</td><td><a href="#" class="action-link" onclick="alert('Ver histórico de ${p.nome}')">Ver histórico</a></td>`;
         tabelaMedico.appendChild(tr);
       });
     };
-
     renderizarTabela(dbPacientesTabela);
 
     const buscaCpf = document.getElementById("busca-paciente-cpf");
     const btnBuscar = document.getElementById("btn-buscar-paciente");
-
     btnBuscar.addEventListener("click", () => {
       const termo = buscaCpf.value.trim();
-      if(termo === "") {
-        renderizarTabela(dbPacientesTabela);
-      } else {
-        const filtrados = dbPacientesTabela.filter(p => p.cpf.includes(termo) || p.nome.toLowerCase().includes(termo.toLowerCase()));
-        renderizarTabela(filtrados);
-      }
+      if(termo === "") { renderizarTabela(dbPacientesTabela); } 
+      else { renderizarTabela(dbPacientesTabela.filter(p => p.cpf.includes(termo) || p.nome.toLowerCase().includes(termo.toLowerCase()))); }
     });
   }
 
-  // Tela de Perfil do Médico
+  // Tela de Perfil do Médico (Edição - Logado)
   const formPerfilMedico = document.getElementById("form-perfil-medico");
   if (formPerfilMedico) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
-    
-    // Verifica se o usuário logado é realmente um médico
-    if (!sessao || !sessao.id.includes("MED")) {
-      alert("Acesso negado. Faça login como profissional.");
-      window.location.replace("index.html");
-      return;
-    }
+    if (!sessao || !sessao.id.includes("MED")) { window.location.replace("index.html"); return; }
 
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
-
-    // Se algum dado estiver vazio na sessão, tenta buscar no dbMedicos original como fallback
     const medicoDB = dbMedicos.find(m => m.matricula === sessao.id) || {};
 
     document.getElementById("perfil-nome").value = sessao.nome || "";
     document.getElementById("perfil-matricula").value = sessao.id || "";
     document.getElementById("perfil-crm").value = sessao.crm || "";
     document.getElementById("perfil-especialidade").value = sessao.especialidade || "";
-    
     document.getElementById("perfil-cidade").value = sessao.cidade || medicoDB.cidade || "";
     document.getElementById("perfil-rua").value = sessao.rua || medicoDB.rua || "";
     document.getElementById("perfil-preco").value = sessao.preco || medicoDB.preco || "";
 
-    // Lógica para salvar as alterações
     formPerfilMedico.addEventListener("submit", (e) => {
       e.preventDefault();
-
       const nome = document.getElementById("perfil-nome").value.trim();
       const cidade = document.getElementById("perfil-cidade").value.trim();
       const rua = document.getElementById("perfil-rua").value.trim();
       const preco = document.getElementById("perfil-preco").value.trim();
 
-      // Atualiza a sessão ativa
       const sessaoAtualizada = { ...sessao, nome, cidade, rua, preco };
       localStorage.setItem("@medtriage/sessao", JSON.stringify(sessaoAtualizada));
 
-      // Atualiza o banco de dados de profissionais
       const storageKey = "@medtriage/profissionais";
       const profissionaisSalvos = JSON.parse(localStorage.getItem(storageKey)) || [];
       const index = profissionaisSalvos.findIndex(m => m.id === sessao.id);
-      
       if (index !== -1) {
         profissionaisSalvos[index] = { ...profissionaisSalvos[index], nome, cidade, rua, preco };
         localStorage.setItem(storageKey, JSON.stringify(profissionaisSalvos));
       }
-
       alert("Perfil atualizado com sucesso!");
       window.location.href = "medico_dashboard.html";
     });
+  }
+
+  // Tela de Visualização do Perfil do Médico (Pelo Paciente)
+  const perfilPublicoContainer = document.getElementById("perfil-publico-container");
+  if (perfilPublicoContainer) {
+    const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
+    if (!sessao) { window.location.replace("index.html"); return; }
+    document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
+
+    const medicoMatricula = localStorage.getItem("@medtriage/medico-selecionado");
+    
+    // Aqui buscamos na lista atualizada (não no array estático)
+    const medicosAtualizados = obterMedicosAtualizados();
+    const medico = medicosAtualizados.find(m => m.matricula === medicoMatricula);
+
+    if (!medico) {
+      alert("Nenhum médico selecionado. Volte para a busca.");
+      window.location.replace("buscar_especialista.html");
+      return;
+    }
+
+    document.getElementById("pub-nome").textContent = medico.nome;
+    document.getElementById("pub-especialidade").textContent = medico.especialidade;
+    document.getElementById("pub-crm").textContent = medico.crm;
+    document.getElementById("pub-rating").textContent = medico.rating.toFixed(1);
+    document.getElementById("pub-avaliacoes").textContent = medico.avaliacoes;
+    document.getElementById("pub-bio").textContent = medico.bio;
+    document.getElementById("pub-preco").textContent = medico.preco;
+    document.getElementById("pub-endereco").textContent = `${medico.rua}, ${medico.cidade}`;
   }
 });

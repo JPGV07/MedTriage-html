@@ -8,8 +8,11 @@
 </head>
 <body>
 
+  <!-- Cabeçalho padrão da área do profissional -->
   <header class="patient-header">
     <div class="patient-header-container">
+      
+      <!-- Logo do sistema -->
       <div class="brand" style="margin-bottom: 0;">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="2" y="2" width="20" height="20" rx="4" fill="currentColor"/>
@@ -18,47 +21,59 @@
         <span>MedTriage</span>
       </div>
 
+      <!-- Menu de navegação do médico -->
       <nav class="patient-nav">
         <a href="medico_dashboard.html">Meus pacientes</a>
         <a href="#">Ver consultas</a>
         <a href="#">Histórico de atendimentos</a>
+        <!-- Link ativo indicando que estamos na página de perfil -->
         <a href="medico_perfil.html" class="active">Meu Perfil</a>
       </nav>
 
+      <!-- Área com saudação e botão de sair -->
       <div class="patient-user-area">
         <span class="user-greeting" id="user-greeting">Olá, Dr(a). [Nome]</span>
         <button id="btn-logout" class="btn-outline" style="padding: 8px 16px; width: auto;">Sair</button>
       </div>
+
     </div>
   </header>
 
+  <!-- Conteúdo principal da página -->
   <main class="dashboard-main">
     
+    <!-- Título de boas-vindas e subtítulo -->
     <div class="welcome-section">
       <h1>Meu Perfil</h1>
       <p>Gerencie suas informações profissionais e de atendimento.</p>
     </div>
 
+    <!-- Formulário onde o médico edita seus dados -->
     <form id="form-perfil-medico" class="card-dados">
       
+      <!-- Seção 1: Dados que não podem ser alterados -->
       <h2 class="section-title">Dados Profissionais</h2>
       <div class="form-grid">
         
+        <!-- Campo de Nome  -->
         <div class="input-group">
           <label for="perfil-nome">Nome completo</label>
           <input type="text" id="perfil-nome" placeholder="Seu nome" required>
         </div>
 
+        <!-- Campo de Matrícula -->
         <div class="input-group">
           <label for="perfil-matricula">Matrícula (Não editável)</label>
           <input type="text" id="perfil-matricula" readonly style="background-color: #e2e8f0; cursor: not-allowed;">
         </div>
 
+        <!-- Campo de CRM  -->
         <div class="input-group">
           <label for="perfil-crm">CRM (Não editável)</label>
           <input type="text" id="perfil-crm" readonly style="background-color: #e2e8f0; cursor: not-allowed;">
         </div>
 
+        <!-- Campo de Especialidade  -->
         <div class="input-group">
           <label for="perfil-especialidade">Especialidade (Não editável)</label>
           <input type="text" id="perfil-especialidade" readonly style="background-color: #e2e8f0; cursor: not-allowed;">
@@ -66,19 +81,23 @@
 
       </div>
 
+      <!-- Seção 2: Dados de localização e preço -->
       <h2 class="section-title" style="margin-top: 32px;">Local e Preço</h2>
       <div class="form-grid">
         
+        <!-- Campo de Cidade -->
         <div class="input-group">
           <label for="perfil-cidade">Cidade</label>
           <input type="text" id="perfil-cidade" placeholder="Ex: João Pessoa" required>
         </div>
 
+        <!-- Campo de Rua / Endereço -->
         <div class="input-group">
           <label for="perfil-rua">Rua / Endereço</label>
           <input type="text" id="perfil-rua" placeholder="Ex: Av. Epitácio Pessoa, 1000" required>
         </div>
 
+        <!-- Campo de Preço da Consulta -->
         <div class="input-group">
           <label for="perfil-preco">Preço da consulta</label>
           <input type="text" id="perfil-preco" placeholder="Ex: R$ 250,00" required>
@@ -86,8 +105,11 @@
 
       </div>
 
+      <!-- Botões de ação do formulário -->
       <div style="display: flex; gap: 16px; margin-top: 40px;">
+        <!-- Botão para salvar as alterações -->
         <button type="submit" class="btn btn-primary" style="width: auto;">Salvar Alterações</button>
+        <!-- Link para cancelar e voltar ao dashboard -->
         <a href="medico_dashboard.html" class="btn btn-outline" style="width: auto;">Voltar</a>
       </div>
 
@@ -95,6 +117,7 @@
 
   </main>
 
+  <!-- Importação do JavaScript para carregar os dados e salvar as alterações -->
   <script src="js/main.js"></script>
 </body>
 </html>
