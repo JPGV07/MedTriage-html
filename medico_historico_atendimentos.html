@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Histórico de atendimentos realizados no MedTriage.">
+  <title>Histórico de Atendimentos | MedTriage</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    /* Ajustes específicos da busca por CPF/nome */
+    .search-box .input-wrapper input {
+      padding-left: 44px;
+      padding-right: 44px;
+    }
+
+    .search-box .input-icon-left {
+      position: absolute;
+      left: 14px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .search-box .icon-btn svg { pointer-events: none; }
+
+    .resultado-info {
+      display: none;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    .resultado-info strong { color: var(--text-main); }
+
+    @media (max-width: 600px) {
+      .search-box .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="patient-header">
+    <div class="patient-header-container">
+      <div class="brand" style="margin-bottom: 0;">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="2" y="2" width="20" height="20" rx="4" fill="currentColor"/>
+          <path d="M12 6V18M6 12H18" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <span>MedTriage</span>
+      </div>
+      <nav class="patient-nav" aria-label="Navegação principal">
+        <a href="medico_dashboard.html">Meus pacientes</a>
+        <a href="medico_consultas.html">Ver consultas</a>
+        <a href="medico_historico_atendimentos.html" class="active" aria-current="page">Histórico de atendimentos</a>
+        <a href="medico_perfil.html">Meu Perfil</a>
+      </nav>
+      <div class="patient-user-area">
+        <span class="user-greeting" id="user-greeting">Olá, Dr(a). [Nome]</span>
+        <button id="btn-logout" class="btn-outline" style="padding: 8px 16px; width: auto;">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-main">
+
+    <div class="welcome-section">
+      <h1>Histórico de atendimentos</h1>
+      <p>Todos os atendimentos já realizados por você.</p>
+    </div>
+
+    <!-- Estatísticas rápidas -->
+    <div class="stats-grid" id="stats-historico"></div>
+
+    <!-- Busca por paciente ou CPF -->
+    <section class="search-box" aria-label="Buscar atendimentos" style="margin-bottom: 24px;">
+      <div class="input-group" style="flex: 1;">
+        <label for="busca-historico">Buscar por paciente ou CPF</label>
+
+        <div class="input-wrapper">
+          <!-- Ícone de busca (esquerda) -->
+          <span class="input-icon-left" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="7"/>
+              <line x1="21" y1="21" x2="16.5" y2="16.5"/>
+            </svg>
+          </span>
+
+          <input
+            type="text"
+            id="busca-historico"
+            placeholder="Nome do paciente ou CPF (000.000.000-00)"
+            autocomplete="off"
+            aria-describedby="busca-helper"
+          >
+
+          <!-- Botão limpar (direita) -->
+          <button
+            type="button"
+            class="icon-btn"
+            id="btn-limpar-busca"
+            aria-label="Limpar busca"
+            style="display: none;"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="6" y1="18" x2="18" y2="6"/>
+            </svg>
+          </button>
+        </div>
+
+        <span class="helper-text" id="busca-helper">
+          Você pode digitar o nome completo ou o CPF com/sem pontuação.
+        </span>
+      </div>
+
+      <button id="btn-buscar-historico" class="btn btn-primary" type="button">
+        Buscar
+      </button>
+    </section>
+
+    <p class="resultado-info" id="resultado-info" role="status" aria-live="polite"></p>
+
+    <div id="lista-historico-atendimentos"></div>
+
+    <div class="laudos-vazio" id="historico-atend-vazio" style="display: none;" role="status" aria-live="polite">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+           stroke="var(--border-color)" stroke-width="1.5"
+           style="margin-bottom: 16px;" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      <h3>Nenhum atendimento encontrado</h3>
+      <p>Seus atendimentos realizados aparecerão aqui.</p>
+    </div>
+
+  </main>
+
+  <script src="js/main.js"></script>
+
+  <!-- Máscara de CPF + UI da busca -->
+  <script>
+    (function () {
+      const input      = document.getElementById('busca-historico');
+      const btnLimpar  = document.getElementById('btn-limpar-busca');
+      const btnBuscar  = document.getElementById('btn-buscar-historico');
+
+      if (!input) return;
+
+      // Remove tudo que não for dígito
+      const onlyDigits = (s) => s.replace(/\D/g, '');
+
+      // Aplica máscara 000.000.000-00 de forma progressiva
+      const maskCPF = (digits) => {
+        digits = digits.slice(0, 11);
+        let out = '';
+        if (digits.length > 0) out += digits.slice(0, 3);
+        if (digits.length > 3) out += '.' + digits.slice(3, 6);
+        if (digits.length > 6) out += '.' + digits.slice(6, 9);
+        if (digits.length > 9) out += '-' + digits.slice(9, 11);
+        return out;
+      };
+
+      // Detecta se o valor contém apenas caracteres "de CPF"
+      const pareceCPF = (raw) => {
+        if (onlyDigits(raw).length === 0) return false;
+        // remove dígitos, pontos, hífens, espaços → sobra algo? então é nome
+        return raw.replace(/[\d.\-\s]/g, '').length === 0;
+      };
+
+      const updateLimparBtn = () => {
+        btnLimpar.style.display = input.value.length ? 'flex' : 'none';
+      };
+
+      input.addEventListener('input', (e) => {
+        const raw = e.target.value;
+        if (pareceCPF(raw)) {
+          const digits = onlyDigits(raw);
+          e.target.value = maskCPF(digits);
+        }
+        updateLimparBtn();
+      });
+
+      // Enter dispara a busca
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          btnBuscar?.click();
+        }
+      });
+
+      // Limpar
+      btnLimpar?.addEventListener('click', () => {
+        input.value = '';
+        updateLimparBtn();
+        input.focus();
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    })();
+  </script>
+</body>
+</html>

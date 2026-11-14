@@ -1657,52 +1657,86 @@ body {
   font-weight: 500;
   margin: 0;
 }
+/* ====== FILTROS DE CONSULTA ====== */
+        .filtros-consulta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 6px;
+            margin-bottom: 24px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: fit-content;
+            max-width: 100%;
+        }
 
-/* ===== RESPONSIVIDADE GLOBAL ===== */
-@media (max-width: 768px) {
-  .patient-header-container { flex-direction: column; gap: 16px; }
-  .patient-nav { width: 100%; overflow-x: auto; padding-bottom: 8px; }
-  .next-appointment-card { flex-direction: column; align-items: flex-start; gap: 16px; }
-  .next-appointment-card .btn { width: 100%; }
-  .doctor-card { flex-direction: column; align-items: flex-start; }
-  .doctor-action { text-align: left; width: 100%; }
-  .doctor-action .btn { width: 100%; }
-  .perfil-medico-card { flex-direction: column; text-align: center; padding: 24px; }
-  .perfil-medico-info h1 { font-size: 22px; }
-  .endereco-texto { justify-content: center; }
-  .preco-destaque-box { flex-direction: column; align-items: flex-start; }
-  .preco-destaque-box .btn { width: 100% !important; }
-  .booking-layout { grid-template-columns: 1fr; }
-  .booking-summary { position: static; order: -1; margin-bottom: 24px; }
-  .dias-grid { grid-template-columns: repeat(2, 1fr); }
-  .tipo-consulta-grid { grid-template-columns: 1fr; }
-  .valores-grid { grid-template-columns: 1fr; }
-  .revisao-dados-grid { grid-template-columns: 1fr; }
-  .revisao-card { padding: 24px; }
-  .detalhes-grid { grid-template-columns: 1fr; }
-  .detalhes-acoes { flex-direction: column; }
-  .detalhes-acoes .btn { width: 100% !important; }
-  .consulta-item-card { flex-direction: column; align-items: flex-start; }
-  .consulta-item-card .btn { width: 100%; }
-  .cancelamento-acoes { flex-direction: column; }
-  .cancelamento-acoes .btn { width: 100% !important; }
-  .atendimento-info-grid { grid-template-columns: 1fr; }
-  .atendimento-laudo-card { padding: 24px; }
-  .atendimento-acoes { flex-direction: column; }
-  .atendimento-acoes .btn, .atendimento-acoes a { width: 100% !important; }
-  .stats-grid { grid-template-columns: 1fr; }
-  .stat-card { padding: 16px 20px; }
-  .stat-info h3 { font-size: 24px; }
-  .stat-icon { width: 44px; height: 44px; font-size: 22px; }
-}
+        .filtro-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background-color .2s, color .2s, border-color .2s;
+        }
 
-@media (max-width: 480px) {
-  .login-card { padding: 24px; }
-  .title { font-size: 24px; }
-  .sucesso-card { padding: 24px; }
-  .sucesso-titulo { font-size: 22px; }
-}
+        .filtro-btn:hover {
+            background: var(--bg-body);
+            color: var(--text-main);
+        }
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-}
+        .filtro-btn:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .filtro-btn.active {
+            background: var(--primary);
+            color: #FFFFFF;
+        }
+
+        .filtro-btn svg { flex-shrink: 0; }
+
+        .filtro-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 7px;
+            border-radius: 11px;
+            background: rgba(0, 0, 0, .08);
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .filtro-btn.active .filtro-count {
+            background: rgba(255, 255, 255, .25);
+            color: #FFFFFF;
+        }
+
+        /* ====== EMPTY STATE ====== */
+        .laudos-vazio .btn-limpar-filtro {
+            width: auto;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .filtros-consulta {
+                width: 100%;
+            }
+            .filtro-btn {
+                flex: 1 1 calc(50% - 8px);
+                justify-content: center;
+            }
+        }
