@@ -17,13 +17,11 @@
         </svg>
         <span>MedTriage</span>
       </div>
-
       <nav class="patient-nav">
         <a href="paciente_dashboard.html" class="active">Início</a>
         <a href="buscar_especialista.html">Agendar consulta</a>
         <a href="#">Histórico de laudos</a>
       </nav>
-
       <div class="patient-user-area">
         <span class="user-greeting" id="user-greeting">Olá, [Nome]</span>
         <button id="btn-logout" class="btn-outline" style="padding: 8px 16px; width: auto;">Sair</button>
@@ -38,7 +36,7 @@
       <p>Veja sua consulta e acesse seus atalhos.</p>
     </div>
 
-    <!-- Card com consulta (Inicialmente oculto) -->
+    <!-- Card para UMA consulta -->
     <div class="next-appointment-card" id="card-com-consulta" style="display: none;">
       <div class="appointment-info">
         <span class="badge-waiting">Em aguardo</span>
@@ -46,11 +44,16 @@
         <p id="appointment-doctor">Carregando...</p>
         <p class="appointment-location" id="appointment-location">Carregando...</p>
       </div>
-      <!-- O clique aqui será gerenciado pelo JS -->
       <button id="btn-ver-detalhes" class="btn btn-primary" style="width: auto;">Detalhes da Consulta</button>
     </div>
 
-    <!-- Card sem consulta (Padrão) -->
+    <!-- Card para MÚLTIPLAS consultas -->
+    <div class="multiplas-consultas-container" id="multiplas-consultas" style="display: none;">
+      <h2 class="section-title" style="margin-bottom: 16px;">Minhas consultas agendadas</h2>
+      <div id="lista-consultas-dashboard"></div>
+    </div>
+
+    <!-- Card sem consulta -->
     <div class="next-appointment-card empty-state" id="card-sem-consulta">
       <div class="appointment-info">
         <h2>Você não tem consultas agendadas.</h2>
@@ -61,7 +64,6 @@
 
     <h2 class="section-title">Atalhos</h2>
     <div class="shortcuts-grid">
-      
       <div class="shortcut-card">
         <div class="shortcut-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -70,16 +72,14 @@
         <p>Busque um especialista e escolha o horário.</p>
         <a href="buscar_especialista.html" class="shortcut-link">Buscar especialista &rarr;</a>
       </div>
-
       <div class="shortcut-card">
         <div class="shortcut-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
         <h3>Histórico de laudos</h3>
         <p>Veja e baixe os laudos das suas consultas.</p>
-        <a href="#" class="shortcut-link">Ver laudos &rarr;</a>
+        <a href="laudos.html" class="shortcut-link">Ver laudos &rarr;</a>
       </div>
-
       <div class="shortcut-card">
         <div class="shortcut-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -88,7 +88,6 @@
         <p>Confira e edite seus dados pessoais.</p>
         <a href="meus_dados.html" class="shortcut-link">Editar meus dados &rarr;</a>
       </div>
-
     </div>
 
   </main>

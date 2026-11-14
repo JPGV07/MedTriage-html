@@ -1512,3 +1512,140 @@ body {
     width: 100% !important;
   }
 }
+/* Múltiplas consultas no Dashboard */
+.multiplas-consultas-container {
+  margin-bottom: 32px;
+}
+
+.consulta-item-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  transition: box-shadow 0.2s;
+}
+
+.consulta-item-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.consulta-item-info h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+  color: var(--text-main);
+}
+
+.consulta-item-info p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+/* Tela de Reagendamento */
+.horarios-grid-container {
+  margin-top: 16px;
+}
+
+/* Tela de Cancelamento */
+.cancelamento-container {
+  display: flex;
+  justify-content: center;
+}
+
+.cancelamento-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+}
+
+.cancelamento-icone {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FEF2F2;
+  border-radius: 50%;
+}
+
+.cancelamento-icone svg {
+  width: 56px;
+  height: 56px;
+}
+
+.cancelamento-titulo {
+  font-size: 24px;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.cancelamento-subtitulo {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.cancelamento-dados {
+  background: var(--bg-body);
+  border-radius: 12px;
+  padding: 20px 24px;
+  text-align: left;
+  margin-bottom: 32px;
+}
+
+.cancelamento-item {
+  margin-bottom: 12px;
+}
+
+.cancelamento-item:last-child {
+  margin-bottom: 0;
+}
+
+.cancelamento-item label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.cancelamento-item p {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.cancelamento-acoes {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .consulta-item-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .consulta-item-card .btn {
+    width: 100%;
+  }
+  .cancelamento-acoes {
+    flex-direction: column;
+  }
+  .cancelamento-acoes .btn {
+    width: 100% !important;
+  }
+}
