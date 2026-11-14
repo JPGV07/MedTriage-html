@@ -6,14 +6,14 @@ async function hashPassword(password) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Função para gerar ID de data no formato YYYY-MM-DD usando HORÁRIO LOCAL (evita bug de timezone)
+// Gera ID de data no formato YYYY-MM-DD usando horário LOCAL
 function gerarIdDataLocal(ano, mes, dia) {
   return `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
 }
 
 // Banco de dados estático de médicos
 const dbMedicos = [
-  { id: 1, nome: "Dr. Carlos Silva", especialidade: "Oftalmologista", cidade: "João Pessoa", crm: "CRM-PB 12345", matricula: "MED1001", senha: "senha123", rating: 4.9, avaliacoes: 35, preco: "R$ 250,00", precoTeleconsulta: "R$ 180,00", rua: "Av. Epitácio Pessoa, 1000", bio: "Médico oftalmologista com 15 anos de experiência." },
+  { id: 1, nome: "Dr. Carlos Silva", especialidade: "Oftalmologista", cidade: "João Pessoa", crm: "CRM-PB 12345", matricula: "MED1001", senha: "senha123", rating: 4.9, avaliacoes: 35, preco: "R$ 250,00", precoTeleconsulta: "R$ 180,00", rua: "Av. Epitácio Pessoa, 1000", bio: "Médico oftalmologista com 15 anos de experiência em cirurgias de catarata e refrativas." },
   { id: 2, nome: "Dra. Beatriz Nogueira", especialidade: "Oftalmologista", cidade: "Campina Grande", crm: "CRM-PB 12346", matricula: "MED1002", senha: "senha123", rating: 4.8, avaliacoes: 22, preco: "R$ 240,00", precoTeleconsulta: "R$ 170,00", rua: "Rua Maciel Pinheiro, 150", bio: "Especialista em doenças da retina e glaucoma." },
   { id: 3, nome: "Dra. Ana Costa", especialidade: "Cardiologista", cidade: "João Pessoa", crm: "CRM-PB 54321", matricula: "MED2001", senha: "senha123", rating: 4.9, avaliacoes: 50, preco: "R$ 300,00", precoTeleconsulta: "R$ 220,00", rua: "Rua das Palmeiras, 450", bio: "Cardiologista intervencionista." },
   { id: 4, nome: "Dr. Ricardo Dias", especialidade: "Cardiologista", cidade: "Campina Grande", crm: "CRM-PB 54322", matricula: "MED2002", senha: "senha123", rating: 4.7, avaliacoes: 18, preco: "R$ 280,00", precoTeleconsulta: "R$ 200,00", rua: "Av. Marechal Floriano, 300", bio: "Especialista em arritmias cardíacas." },
@@ -60,6 +60,7 @@ function obterMedicosAtualizados() {
   });
 }
 
+// Funções globais
 window.salvarMedicoSelecionado = function(matricula) {
   localStorage.setItem("@medtriage/medico-selecionado", matricula);
   window.location.href = "perfil_medico.html";
@@ -70,10 +71,35 @@ window.abrirDetalhes = function(idConsulta) {
   window.location.href = "detalhes_consulta.html";
 };
 
+// Abrir histórico de um paciente (visão do médico)
+window.abrirHistoricoPaciente = function(nome, cpf) {
+  localStorage.setItem("@medtriage/historico-paciente", JSON.stringify({ nome, cpf }));
+  window.location.href = "medico_historico.html";
+};
+
+// Iniciar atendimento: pega a próxima consulta "Aguardando" do médico logado
+window.iniciarAtendimento = function() {
+  const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
+  if (!sessao) return;
+  
+  const consultas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
+  const consultasDoMedico = consultas.filter(c => c.medicoMatricula === sessao.id && c.status === "Aguardando");
+  
+  if (consultasDoMedico.length === 0) {
+    alert("Nenhuma consulta aguardando atendimento no momento.");
+    return;
+  }
+  
+  const proximaConsulta = consultasDoMedico[0];
+  localStorage.setItem("@medtriage/consulta-atendimento", proximaConsulta.id);
+  window.location.href = "atendimento.html";
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
   
   let perfilAtivo = "paciente"; 
 
+  // Semeia o banco de profissionais
   const profissionaisSalvos = JSON.parse(localStorage.getItem("@medtriage/profissionais"));
   if (!profissionaisSalvos || profissionaisSalvos.length === 0) {
     const profissionaisParaSalvar = [];
@@ -88,6 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     localStorage.setItem("@medtriage/profissionais", JSON.stringify(profissionaisParaSalvar));
   }
 
+  // Lógica do olho da senha
   const togglePasswordBtns = document.querySelectorAll(".toggle-password");
   togglePasswordBtns.forEach(btn => {
     btn.addEventListener("click", (e) => {
@@ -363,6 +390,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       badgeStatus.textContent = "Cancelada";
       badgeStatus.style.background = "#FEE2E2";
       badgeStatus.style.color = "#991B1B";
+    } else if (consulta.status === "Realizada") {
+      badgeStatus.textContent = "Realizada";
+      badgeStatus.style.background = "#DCFCE7";
+      badgeStatus.style.color = "#166534";
     } else {
       badgeStatus.textContent = "Em aguardo";
     }
@@ -378,7 +409,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Tela de Reagendamento (CORRIGIDA - usa horário LOCAL)
+  // Tela de Reagendamento
   const diasGridReagendar = document.getElementById("dias-grid");
   if (diasGridReagendar && window.location.pathname.includes("reagendar_consulta")) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
@@ -403,17 +434,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     let diaSelecionado = null;
     let horarioSelecionado = null;
 
-    // CORREÇÃO CRÍTICA: gera os dias usando horário LOCAL
     const dias = [];
     const hoje = new Date();
     for (let i = 0; i < 4; i++) {
-      // new Date(ano, mes, dia) usa o horário LOCAL, não UTC
       const data = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + i);
       const nomesSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
       let labelSemana = i === 0 ? "Hoje" : (i === 1 ? "Amanhã" : nomesSemana[data.getDay()]);
       const dia = String(data.getDate()).padStart(2, '0');
       const mes = String(data.getMonth() + 1).padStart(2, '0');
-      // Monta o ID manualmente com getFullYear/getMonth/getDate (todos LOCAL)
       const idData = gerarIdDataLocal(data.getFullYear(), data.getMonth() + 1, data.getDate());
       dias.push({ id: idData, labelSemana: labelSemana, labelData: `${dia}/${mes}` });
     }
@@ -427,7 +455,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         div.addEventListener("click", () => {
           diaSelecionado = dia.id;
           horarioSelecionado = null;
-          console.log("REAGENDAR: Dia selecionado:", diaSelecionado, "Label:", dia.labelData);
           renderizarDias();
           renderizarHorarios();
           atualizarResumo();
@@ -481,15 +508,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     btnConfirmarReagendamento.addEventListener("click", () => {
-      // CORREÇÃO: parsing manual do ID (YYYY-MM-DD) sem passar por Date
       const partes = diaSelecionado.split("-");
-      const anoFmt = partes[0];
-      const mesFmt = partes[1];
-      const diaFmt = partes[2];
-      const novaDataFormatada = `${diaFmt}/${mesFmt}/${anoFmt}`;
-
-      console.log("REAGENDAR: ID selecionado:", diaSelecionado);
-      console.log("REAGENDAR: Nova data formatada:", novaDataFormatada);
+      const novaDataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
 
       const index = consultasSalvas.findIndex(c => c.id === idConsulta);
       if (index !== -1) {
@@ -668,16 +688,43 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!sessao || !sessao.id.includes("MED")) { window.location.replace("index.html"); return; }
     document.getElementById("welcome-title").textContent = `Olá, ${sessao.nome}`;
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
+
+    const consultasSalvas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
+    const consultasAguardando = consultasSalvas.filter(c => 
+      c.medicoMatricula === sessao.id && c.status === "Aguardando"
+    );
+
+    const cardProxima = document.getElementById("card-proxima-consulta");
+    const cardSemConsulta = document.getElementById("card-sem-consulta");
+
+    if (consultasAguardando.length > 0) {
+      const proxima = consultasAguardando[0];
+      if (cardSemConsulta) cardSemConsulta.style.display = "none";
+      if (cardProxima) {
+        cardProxima.style.display = "flex";
+        document.getElementById("proxima-consulta-paciente").textContent = proxima.pacienteNome;
+        document.getElementById("proxima-consulta-info").textContent = 
+          `${proxima.dataFormatada} às ${proxima.horario} • ${proxima.tipo}`;
+      }
+    } else {
+      if (cardProxima) cardProxima.style.display = "none";
+      if (cardSemConsulta) cardSemConsulta.style.display = "flex";
+    }
+
     const renderizarTabela = (pacientes) => {
       tabelaMedico.innerHTML = "";
-      if(pacientes.length === 0) { tabelaMedico.innerHTML = "<tr><td colspan='4' style='text-align:center; color:var(--text-muted);'>Nenhum paciente encontrado.</td></tr>"; return; }
+      if(pacientes.length === 0) { 
+        tabelaMedico.innerHTML = "<tr><td colspan='4' style='text-align:center; color:var(--text-muted);'>Nenhum paciente encontrado.</td></tr>"; 
+        return; 
+      }
       pacientes.forEach(p => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${p.nome}</td><td>${p.cpf}</td><td>${p.ultimoAtendimento}</td><td><a href="#" class="action-link" onclick="alert('Ver histórico de ${p.nome}')">Ver histórico</a></td>`;
+        tr.innerHTML = `<td>${p.nome}</td><td>${p.cpf}</td><td>${p.ultimoAtendimento}</td><td><a href="#" class="action-link" onclick="abrirHistoricoPaciente('${p.nome}', '${p.cpf}')">Ver histórico</a></td>`;
         tabelaMedico.appendChild(tr);
       });
     };
     renderizarTabela(dbPacientesTabela);
+
     const buscaCpf = document.getElementById("busca-paciente-cpf");
     const btnBuscar = document.getElementById("btn-buscar-paciente");
     btnBuscar.addEventListener("click", () => {
@@ -750,7 +797,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("pub-endereco").textContent = `${medico.rua}, ${medico.cidade}`;
   }
 
-  // Tela de Agendamento - Etapa 1 (CORRIGIDA - usa horário LOCAL)
+  // Tela de Agendamento - Etapa 1
   const diasGrid = document.getElementById("dias-grid");
   if (diasGrid && window.location.pathname.includes("agendar_etapa1")) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
@@ -772,7 +819,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     let horarioSelecionado = null;
     let tipoConsulta = "Presencial";
 
-    // CORREÇÃO CRÍTICA: gera os dias usando horário LOCAL
     const dias = [];
     const hoje = new Date();
     for (let i = 0; i < 4; i++) {
@@ -900,7 +946,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("resumo-tipo").textContent = agendamentoTemp.tipo;
     document.getElementById("resumo-valor").textContent = agendamentoTemp.valor;
 
-    // CORREÇÃO: parsing manual do ID (YYYY-MM-DD) para evitar timezone
     const partes = agendamentoTemp.data.split("-");
     document.getElementById("resumo-horario").textContent = `${partes[2]}/${partes[1]} às ${agendamentoTemp.horario}`;
 
@@ -954,7 +999,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const medicosAtualizados = obterMedicosAtualizados();
     const medico = medicosAtualizados.find(m => m.matricula === agendamento.medicoMatricula) || {};
 
-    // CORREÇÃO: parsing manual (sem new Date) para evitar timezone
     const partes = agendamento.data.split("-");
     const dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
 
@@ -995,6 +1039,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         motivo: agendamento.motivo,
         valor: agendamento.valor,
         status: "Aguardando",
+        laudo: "",
+        laudoRascunho: false,
         dataCriacao: new Date().toISOString()
       };
 
@@ -1103,5 +1149,160 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       window.location.href = "paciente_dashboard.html";
     });
+  }
+
+  // Tela de Atendimento (Médico)
+  const textoLaudo = document.getElementById("texto-laudo");
+  if (textoLaudo) {
+    const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
+    if (!sessao || !sessao.id.includes("MED")) {
+      alert("Acesso negado. Faça login como profissional.");
+      window.location.replace("index.html");
+      return;
+    }
+    document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
+
+    const idConsulta = parseInt(localStorage.getItem("@medtriage/consulta-atendimento"));
+    const consultasSalvas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
+    const consulta = consultasSalvas.find(c => c.id === idConsulta);
+
+    if (!consulta) {
+      alert("Consulta não encontrada. Volte para a agenda.");
+      window.location.replace("medico_dashboard.html");
+      return;
+    }
+
+    document.getElementById("atendimento-paciente-info").textContent = 
+      `${consulta.pacienteNome} · ${consulta.tipo} · ${consulta.dataFormatada} às ${consulta.horario}`;
+    document.getElementById("atendimento-paciente-nome").textContent = consulta.pacienteNome;
+    document.getElementById("atendimento-paciente-cpf").textContent = consulta.pacienteId || "-";
+    document.getElementById("atendimento-data").textContent = `${consulta.dataFormatada} às ${consulta.horario}`;
+    document.getElementById("atendimento-tipo").textContent = consulta.tipo;
+    document.getElementById("atendimento-motivo").textContent = consulta.motivo || "Não informado";
+
+    if (consulta.laudo) {
+      textoLaudo.value = consulta.laudo;
+    }
+
+    document.getElementById("btn-rascunho").addEventListener("click", () => {
+      const texto = textoLaudo.value.trim();
+      if (texto === "") {
+        alert("Escreva o laudo antes de salvar.");
+        return;
+      }
+      const index = consultasSalvas.findIndex(c => c.id === idConsulta);
+      if (index !== -1) {
+        consultasSalvas[index].laudo = texto;
+        consultasSalvas[index].laudoRascunho = true;
+        localStorage.setItem("@medtriage/consultas", JSON.stringify(consultasSalvas));
+        alert("Rascunho salvo com sucesso!");
+      }
+    });
+
+    document.getElementById("btn-finalizar").addEventListener("click", () => {
+      const texto = textoLaudo.value.trim();
+      if (texto === "") {
+        alert("Escreva o laudo antes de finalizar o atendimento.");
+        return;
+      }
+      const confirmar = confirm("Finalizar atendimento? Após isso, o laudo ficará disponível para o paciente.");
+      if (!confirmar) return;
+
+      const index = consultasSalvas.findIndex(c => c.id === idConsulta);
+      if (index !== -1) {
+        consultasSalvas[index].laudo = texto;
+        consultasSalvas[index].laudoRascunho = false;
+        consultasSalvas[index].status = "Realizada";
+        consultasSalvas[index].dataFinalizacao = new Date().toISOString();
+        localStorage.setItem("@medtriage/consultas", JSON.stringify(consultasSalvas));
+      }
+
+      localStorage.removeItem("@medtriage/consulta-atendimento");
+      alert("Atendimento finalizado com sucesso!");
+      window.location.href = "medico_dashboard.html";
+    });
+  }
+
+  // Tela de Laudos (Paciente)
+  const listaLaudos = document.getElementById("lista-laudos");
+  if (listaLaudos) {
+    const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
+    if (!sessao || sessao.id.includes("MED")) { window.location.replace("index.html"); return; }
+    document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
+
+    const consultasSalvas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
+    const meusLaudos = consultasSalvas.filter(c => 
+      c.pacienteId === sessao.id && c.status === "Realizada" && c.laudo && c.laudo.trim() !== ""
+    );
+
+    const laudosVazio = document.getElementById("laudos-vazio");
+
+    if (meusLaudos.length === 0) {
+      listaLaudos.style.display = "none";
+      if (laudosVazio) laudosVazio.style.display = "block";
+    } else {
+      listaLaudos.style.display = "block";
+      if (laudosVazio) laudosVazio.style.display = "none";
+      listaLaudos.innerHTML = "";
+      meusLaudos.reverse().forEach(consulta => {
+        const card = document.createElement("div");
+        card.className = "laudo-card";
+        card.innerHTML = `
+          <div class="laudo-header">
+            <div>
+              <h3>${consulta.especialidade} · ${consulta.tipo}</h3>
+              <p class="laudo-medico">${consulta.medicoNome} • ${consulta.crm || ""}</p>
+            </div>
+            <p class="laudo-data">${consulta.dataFormatada} às ${consulta.horario}</p>
+          </div>
+          <div class="laudo-conteudo">${consulta.laudo}</div>
+        `;
+        listaLaudos.appendChild(card);
+      });
+    }
+  }
+
+  // Tela de Histórico do Paciente (Visão do Médico)
+  const listaHistoricoMedico = document.getElementById("lista-historico-medico");
+  if (listaHistoricoMedico) {
+    const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
+    if (!sessao || !sessao.id.includes("MED")) { window.location.replace("index.html"); return; }
+    document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
+
+    const pacienteInfo = JSON.parse(localStorage.getItem("@medtriage/historico-paciente"));
+    if (!pacienteInfo) {
+      alert("Nenhum paciente selecionado.");
+      window.location.replace("medico_dashboard.html");
+      return;
+    }
+
+    document.getElementById("historico-paciente-nome").textContent = pacienteInfo.nome;
+    document.getElementById("historico-paciente-cpf").textContent = `CPF: ${pacienteInfo.cpf}`;
+
+    const consultasSalvas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
+    const consultasDoPaciente = consultasSalvas.filter(c => 
+      c.pacienteNome === pacienteInfo.nome && c.status === "Realizada"
+    );
+
+    const historicoVazio = document.getElementById("historico-vazio");
+
+    if (consultasDoPaciente.length === 0) {
+      listaHistoricoMedico.style.display = "none";
+      if (historicoVazio) historicoVazio.style.display = "block";
+    } else {
+      listaHistoricoMedico.style.display = "block";
+      if (historicoVazio) historicoVazio.style.display = "none";
+      listaHistoricoMedico.innerHTML = "";
+      consultasDoPaciente.reverse().forEach(consulta => {
+        const card = document.createElement("div");
+        card.className = "historico-card";
+        card.innerHTML = `
+          <h3>${consulta.especialidade} · ${consulta.tipo}</h3>
+          <p class="historico-info">${consulta.medicoNome} • ${consulta.dataFormatada} às ${consulta.horario}</p>
+          <div class="historico-laudo">${consulta.laudo || "Laudo não registrado."}</div>
+        `;
+        listaHistoricoMedico.appendChild(card);
+      });
+    }
   }
 });

@@ -17,7 +17,6 @@
         </svg>
         <span>MedTriage</span>
       </div>
-
       <nav class="patient-nav">
         <a href="medico_dashboard.html" class="active">Meus pacientes</a>
         <a href="#">Ver consultas</a>
@@ -38,14 +37,22 @@
       <p>Seus pacientes e atendimentos.</p>
     </div>
 
-    <!-- Card Próxima Consulta (Médico) -->
-    <div class="next-appointment-card" style="background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%); border-color: #7DD3FC;">
+    <!-- Card Próxima Consulta (preenchido pelo JavaScript) -->
+    <div class="next-appointment-card" id="card-proxima-consulta" style="display: none; background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%); border-color: #7DD3FC;">
       <div class="appointment-info">
-        <span class="badge-waiting" style="background-color: #FEF3C7; color: #B45309;">PRÓXIMA CONSULTA [00:00]</span>
-        <h2>Maria da Silva</h2>
-        <p style="font-weight: 500; color: var(--primary);">Retorno • Teleconsulta</p>
+        <span class="badge-waiting" style="background-color: #FEF3C7; color: #B45309;">PRÓXIMA CONSULTA</span>
+        <h2 id="proxima-consulta-paciente">-</h2>
+        <p id="proxima-consulta-info" style="font-weight: 500; color: var(--primary);">-</p>
       </div>
-      <button class="btn btn-primary" style="width: auto;" onclick="alert('Iniciando atendimento...')">Iniciar atendimento</button>
+      <button class="btn btn-primary" style="width: auto;" onclick="iniciarAtendimento()">Iniciar atendimento</button>
+    </div>
+
+    <!-- Card sem consulta -->
+    <div class="next-appointment-card empty-state" id="card-sem-consulta" style="display: flex;">
+      <div class="appointment-info">
+        <h2>Nenhuma consulta aguardando atendimento.</h2>
+        <p>Suas próximas consultas aparecerão aqui.</p>
+      </div>
     </div>
 
     <!-- Busca de Paciente -->
@@ -57,7 +64,6 @@
       <button id="btn-buscar-paciente" class="btn btn-primary">Buscar</button>
     </div>
 
-    <!-- Lista de Pacientes Atrelados -->
     <h2 class="section-title">Pacientes atrelados a você</h2>
     
     <div class="table-container">
