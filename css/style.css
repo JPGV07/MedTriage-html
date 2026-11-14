@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Tema Paciente (Padrão - Azul) */
   --primary: #005A8D;
   --primary-hover: #004570;
   --bg-body: #F4F7F9;
@@ -12,7 +11,6 @@
   --radius: 8px;
 }
 
-/* Tema Profissional (Verde) */
 body.theme-professional {
   --primary: #0F766E;
   --primary-hover: #0D5D57;
@@ -20,7 +18,6 @@ body.theme-professional {
   --border-color: #A7F3D0;
 }
 
-/* Transições suaves */
 body, .login-card, .tab-btn, .btn, input, .brand svg, .first-time-box {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
@@ -38,9 +35,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ===== LOGIN E CADASTRO ===== */
 .login-wrapper {
-  min-height: 100vh; 
-  display: flex;     
+  min-height: 100vh;
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
@@ -253,12 +251,7 @@ body {
   cursor: pointer;
 }
 
-@media (max-width: 480px) {
-  .login-card { padding: 24px; }
-  .title { font-size: 24px; }
-}
-/*PACIENRTE*\
-/* Estilos do Dashboard do Paciente */
+/* ===== DASHBOARD DO PACIENTE ===== */
 .patient-header {
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--border-color);
@@ -305,7 +298,6 @@ body {
   font-size: 14px;
 }
 
-/* Conteúdo Principal do Dashboard */
 .dashboard-main {
   max-width: 1000px;
   margin: 0 auto;
@@ -326,7 +318,6 @@ body {
   font-size: 15px;
 }
 
-/* Card Próxima Consulta */
 .next-appointment-card {
   background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
   border: 1px solid #7DD3FC;
@@ -369,7 +360,6 @@ body {
   margin-bottom: 12px;
 }
 
-/* Grid de Atalhos */
 .section-title {
   font-size: 18px;
   margin-bottom: 16px;
@@ -433,27 +423,7 @@ body {
   text-decoration: underline;
 }
 
-/* Responsividade Mobile */
-@media (max-width: 768px) {
-  .patient-header-container {
-    flex-direction: column;
-    gap: 16px;
-  }
-  .patient-nav {
-    width: 100%;
-    overflow-x: auto;
-    padding-bottom: 8px;
-  }
-  .next-appointment-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-  .next-appointment-card .btn {
-    width: 100%;
-  }
-}
-/* Estilos para a tela de Meus Dados */
+/* ===== MEUS DADOS ===== */
 .card-dados {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -487,7 +457,6 @@ body {
   outline: none;
 }
 
-/* Estilo dos Checkboxes */
 .checkbox-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -517,7 +486,8 @@ body {
   height: 18px;
   accent-color: var(--primary);
 }
-/* Estilos para a busca de especialistas */
+
+/* ===== BUSCA DE ESPECIALISTAS ===== */
 .search-box {
   display: flex;
   gap: 16px;
@@ -549,7 +519,6 @@ body {
   min-width: 120px;
 }
 
-/* Lista de médicos */
 .doctor-list {
   display: flex;
   flex-direction: column;
@@ -626,129 +595,7 @@ body {
   font-size: 14px;
 }
 
-/* Responsividade */
-@media (max-width: 768px) {
-  .doctor-card {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .doctor-action {
-    text-align: left;
-    width: 100%;
-  }
-  .doctor-action .btn {
-    width: 100%;
-  }
-}
-/* Estilos do Perfil Público do Médico */
-.perfil-medico-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 32px;
-  display: flex;
-  gap: 32px;
-  align-items: flex-start;
-  margin-bottom: 32px;
-}
-
-.perfil-medico-avatar {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: #E0F2FE;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--primary);
-  flex-shrink: 0;
-}
-
-.perfil-medico-info h1 {
-  font-size: 28px;
-  margin-bottom: 8px;
-}
-
-.perfil-medico-info .especialidade-texto {
-  font-size: 16px;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-
-.perfil-medico-info .rating-texto {
-  font-size: 15px;
-  color: #D97706;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.perfil-medico-info .bio-texto {
-  font-size: 15px;
-  color: var(--text-main);
-  line-height: 1.6;
-}
-
-.servicos-lista {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  margin-bottom: 32px;
-  overflow: hidden;
-}
-
-.servico-item {
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.servico-item:last-child {
-  border-bottom: none;
-}
-
-.servico-nome {
-  font-weight: 500;
-  font-size: 16px;
-}
-
-.servico-preco {
-  font-weight: 600;
-  font-size: 16px;
-  color: var(--primary);
-}
-
-.horarios-grid {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 16px;
-}
-
-.btn-horario {
-  padding: 12px 24px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--primary);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-horario:hover {
-  border-color: var(--primary);
-  background: #F0F9FF;
-}
-
-@media (max-width: 768px) {
-  .perfil-medico-card { flex-direction: column; align-items: center; text-align: center; }
-  .servico-item { flex-direction: column; align-items: flex-start; gap: 12px; }
-}
-
-/* Página de Perfil do Médico */
+/* ===== PERFIL PÚBLICO DO MÉDICO ===== */
 .back-link-page {
   display: inline-flex;
   align-items: center;
@@ -854,6 +701,37 @@ body {
   line-height: 1.7;
 }
 
+.servicos-lista {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 32px;
+  overflow: hidden;
+}
+
+.servico-item {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.servico-item:last-child {
+  border-bottom: none;
+}
+
+.servico-nome {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.servico-preco {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--primary);
+}
+
 .preco-destaque-box {
   display: flex;
   justify-content: space-between;
@@ -874,20 +752,7 @@ body {
   color: var(--primary);
 }
 
-@media (max-width: 768px) {
-  .perfil-medico-card {
-    flex-direction: column;
-    text-align: center;
-    padding: 24px;
-  }
-  .perfil-medico-info h1 { font-size: 22px; }
-  .endereco-texto { justify-content: center; }
-  .preco-destaque-box { flex-direction: column; align-items: flex-start; }
-  .preco-destaque-box .btn { width: 100% !important; }
-}
-/* Estilos para o fluxo de agendamento (Etapa 1) */
-
-/* Stepper (Etapas) */
+/* ===== AGENDAMENTO (STEPPER + ETAPA 1) ===== */
 .stepper {
   display: flex;
   align-items: center;
@@ -895,6 +760,7 @@ body {
   margin-bottom: 32px;
   flex-wrap: wrap;
 }
+
 .step {
   display: flex;
   align-items: center;
@@ -903,9 +769,11 @@ body {
   font-weight: 600;
   color: var(--text-muted);
 }
+
 .step.active {
   color: var(--text-main);
 }
+
 .step-circle {
   width: 32px;
   height: 32px;
@@ -916,11 +784,18 @@ body {
   justify-content: center;
   font-size: 14px;
 }
+
 .step.active .step-circle {
   background: var(--primary);
   border-color: var(--primary);
   color: white;
 }
+
+.step.completed .step-circle {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
 .step-line {
   flex: 1;
   height: 2px;
@@ -928,7 +803,6 @@ body {
   min-width: 20px;
 }
 
-/* Layout de duas colunas (Principal + Resumo) */
 .booking-layout {
   display: grid;
   grid-template-columns: 1fr 320px;
@@ -936,7 +810,6 @@ body {
   align-items: start;
 }
 
-/* Grid de opções de tipo de consulta */
 .tipo-consulta-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -972,7 +845,6 @@ body {
   font-size: 15px;
 }
 
-/* Grid de Dias */
 .dias-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1013,7 +885,6 @@ body {
   margin-top: 4px;
 }
 
-/* Grid de Horários */
 .horarios-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -1053,7 +924,6 @@ body {
   text-decoration: line-through;
 }
 
-/* Resumo Lateral */
 .booking-summary {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -1115,30 +985,12 @@ body {
   color: var(--text-main);
 }
 
-/* Botões de ação */
 .action-buttons {
   display: flex;
   gap: 16px;
 }
 
-/* Responsividade */
-@media (max-width: 768px) {
-  .booking-layout {
-    grid-template-columns: 1fr;
-  }
-  .booking-summary {
-    position: static;
-    order: -1;
-    margin-bottom: 24px;
-  }
-  .dias-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .tipo-consulta-grid {
-    grid-template-columns: 1fr;
-  }
-}
-/* Estilos dos dois valores no perfil do médico */
+/* ===== PERFIL DO MÉDICO (EDITAR) ===== */
 .valores-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1166,12 +1018,7 @@ body {
   color: var(--primary);
 }
 
-@media (max-width: 768px) {
-  .valores-grid {
-    grid-template-columns: 1fr;
-  }
-}
-/* Estilos adicionais para a Etapa 2 */
+/* ===== ETAPA 2 ===== */
 .label-pergunta {
   display: block;
   font-size: 14px;
@@ -1196,11 +1043,7 @@ body {
   border-color: var(--primary);
 }
 
-.step.completed .step-circle {
-  background: var(--primary);
-  border-color: var(--primary);
-}
-/* Estilos da Tela de Revisão (Etapa 3) */
+/* ===== ETAPA 3 (REVISÃO) ===== */
 .revisao-container {
   display: flex;
   justify-content: center;
@@ -1284,15 +1127,7 @@ body {
   color: var(--text-muted);
 }
 
-@media (max-width: 768px) {
-  .revisao-dados-grid {
-    grid-template-columns: 1fr;
-  }
-  .revisao-card {
-    padding: 24px;
-  }
-}
-/* Tela de Agendamento com Sucesso */
+/* ===== AGENDAMENTO COM SUCESSO ===== */
 .sucesso-wrapper {
   min-height: 100vh;
   display: flex;
@@ -1438,15 +1273,7 @@ body {
   font-size: 16px;
 }
 
-@media (max-width: 480px) {
-  .sucesso-card {
-    padding: 24px;
-  }
-  .sucesso-titulo {
-    font-size: 22px;
-  }
-}
-/* Estilos da Tela de Detalhes da Consulta */
+/* ===== DETALHES DA CONSULTA ===== */
 .detalhes-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -1501,18 +1328,7 @@ body {
   background: #FEF2F2;
 }
 
-@media (max-width: 768px) {
-  .detalhes-grid {
-    grid-template-columns: 1fr;
-  }
-  .detalhes-acoes {
-    flex-direction: column;
-  }
-  .detalhes-acoes .btn {
-    width: 100% !important;
-  }
-}
-/* Múltiplas consultas no Dashboard */
+/* ===== MÚLTIPLAS CONSULTAS ===== */
 .multiplas-consultas-container {
   margin-bottom: 32px;
 }
@@ -1546,12 +1362,7 @@ body {
   margin-bottom: 2px;
 }
 
-/* Tela de Reagendamento */
-.horarios-grid-container {
-  margin-top: 16px;
-}
-
-/* Tela de Cancelamento */
+/* ===== CANCELAMENTO ===== */
 .cancelamento-container {
   display: flex;
   justify-content: center;
@@ -1634,21 +1445,7 @@ body {
   justify-content: center;
 }
 
-@media (max-width: 768px) {
-  .consulta-item-card {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .consulta-item-card .btn {
-    width: 100%;
-  }
-  .cancelamento-acoes {
-    flex-direction: column;
-  }
-  .cancelamento-acoes .btn {
-    width: 100% !important;
-  }
-}/* Tela de Atendimento (Médico) */
+/* ===== ATENDIMENTO (MÉDICO) ===== */
 .atendimento-container {
   max-width: 900px;
 }
@@ -1716,22 +1513,7 @@ body {
   flex-wrap: wrap;
 }
 
-@media (max-width: 768px) {
-  .atendimento-info-grid {
-    grid-template-columns: 1fr;
-  }
-  .atendimento-laudo-card {
-    padding: 24px;
-  }
-  .atendimento-acoes {
-    flex-direction: column;
-  }
-  .atendimento-acoes .btn,
-  .atendimento-acoes a {
-    width: 100% !important;
-  }
-}
-/* Tela de Histórico de Laudos (Paciente) */
+/* ===== LAUDOS E HISTÓRICO ===== */
 .laudos-vazio {
   text-align: center;
   padding: 64px 24px;
@@ -1794,7 +1576,6 @@ body {
   white-space: pre-wrap;
 }
 
-/* Histórico do Médico */
 .historico-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -1824,4 +1605,104 @@ body {
   border-radius: 8px;
   border-left: 3px solid var(--primary);
   white-space: pre-wrap;
+}
+
+/* ===== CARDS DE ESTATÍSTICAS DO MÉDICO ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+}
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: #F0F9FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.stat-info h3 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-info p {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin: 0;
+}
+
+/* ===== RESPONSIVIDADE GLOBAL ===== */
+@media (max-width: 768px) {
+  .patient-header-container { flex-direction: column; gap: 16px; }
+  .patient-nav { width: 100%; overflow-x: auto; padding-bottom: 8px; }
+  .next-appointment-card { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .next-appointment-card .btn { width: 100%; }
+  .doctor-card { flex-direction: column; align-items: flex-start; }
+  .doctor-action { text-align: left; width: 100%; }
+  .doctor-action .btn { width: 100%; }
+  .perfil-medico-card { flex-direction: column; text-align: center; padding: 24px; }
+  .perfil-medico-info h1 { font-size: 22px; }
+  .endereco-texto { justify-content: center; }
+  .preco-destaque-box { flex-direction: column; align-items: flex-start; }
+  .preco-destaque-box .btn { width: 100% !important; }
+  .booking-layout { grid-template-columns: 1fr; }
+  .booking-summary { position: static; order: -1; margin-bottom: 24px; }
+  .dias-grid { grid-template-columns: repeat(2, 1fr); }
+  .tipo-consulta-grid { grid-template-columns: 1fr; }
+  .valores-grid { grid-template-columns: 1fr; }
+  .revisao-dados-grid { grid-template-columns: 1fr; }
+  .revisao-card { padding: 24px; }
+  .detalhes-grid { grid-template-columns: 1fr; }
+  .detalhes-acoes { flex-direction: column; }
+  .detalhes-acoes .btn { width: 100% !important; }
+  .consulta-item-card { flex-direction: column; align-items: flex-start; }
+  .consulta-item-card .btn { width: 100%; }
+  .cancelamento-acoes { flex-direction: column; }
+  .cancelamento-acoes .btn { width: 100% !important; }
+  .atendimento-info-grid { grid-template-columns: 1fr; }
+  .atendimento-laudo-card { padding: 24px; }
+  .atendimento-acoes { flex-direction: column; }
+  .atendimento-acoes .btn, .atendimento-acoes a { width: 100% !important; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .stat-card { padding: 16px 20px; }
+  .stat-info h3 { font-size: 24px; }
+  .stat-icon { width: 44px; height: 44px; font-size: 22px; }
+}
+
+@media (max-width: 480px) {
+  .login-card { padding: 24px; }
+  .title { font-size: 24px; }
+  .sucesso-card { padding: 24px; }
+  .sucesso-titulo { font-size: 22px; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
