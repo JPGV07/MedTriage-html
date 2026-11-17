@@ -1,0 +1,389 @@
+/* media queries: tablet */
+@media (max-width: 900px) {
+  .dashboard-main {
+    padding: 24px 16px;
+  }
+
+  .patient-header-container {
+    flex-wrap: wrap;
+    row-gap: 12px;
+  }
+
+  .patient-nav {
+    order: 3;
+    width: 100%;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .patient-nav a {
+    white-space: nowrap;
+    font-size: 13px;
+  }
+
+  .patient-user-area {
+    margin-left: auto;
+  }
+
+  .booking-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-summary {
+    position: static;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .perfil-medico-card {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .endereco-texto {
+    justify-content: center;
+  }
+}
+
+/* media queries: mobile */
+@media (max-width: 600px) {
+  .login-card {
+    padding: 28px 20px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .patient-header {
+    padding: 12px 0;
+  }
+
+  .patient-header-container {
+    padding: 0 16px;
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  .brand {
+    font-size: 18px;
+    margin-bottom: 0;
+  }
+
+  .brand svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .patient-nav {
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .user-greeting {
+    display: none;
+  }
+
+  .dashboard-main {
+    padding: 20px 16px;
+  }
+
+  .welcome-section h1,
+  .welcome-title {
+    font-size: 22px;
+  }
+
+  .welcome-section p {
+    font-size: 14px;
+  }
+
+  .next-appointment-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+  }
+
+  .next-appointment-card .btn {
+    width: 100%;
+  }
+
+  .shortcuts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-box {
+    padding: 16px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box .btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .doctor-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+  }
+
+  .doctor-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .doctor-avatar {
+    width: 64px;
+    height: 64px;
+  }
+
+  .doctor-action {
+    width: 100%;
+    text-align: left;
+  }
+
+  .doctor-action .btn {
+    width: 100%;
+  }
+
+  .perfil-medico-card {
+    padding: 24px 20px;
+    gap: 16px;
+  }
+
+  .perfil-medico-avatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  .perfil-medico-info h1 {
+    font-size: 22px;
+  }
+
+  .perfil-secao-card {
+    padding: 20px;
+  }
+
+  .stepper {
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .step {
+    font-size: 12px;
+  }
+
+  .step-circle {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  .step-line {
+    min-width: 10px;
+  }
+
+  .tipo-consulta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dias-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .dia-item {
+    padding: 10px 6px;
+  }
+
+  .dia-semana {
+    font-size: 13px;
+  }
+
+  .dia-data {
+    font-size: 11px;
+  }
+
+  .horarios-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+  }
+
+  .btn-horario {
+    padding: 10px 6px;
+    font-size: 13px;
+  }
+
+  .booking-summary {
+    padding: 20px;
+  }
+
+  .action-buttons {
+    flex-direction: column-reverse;
+  }
+
+  .action-buttons .btn {
+    width: 100%;
+  }
+
+  .revisao-card {
+    padding: 20px;
+  }
+
+  .revisao-dados-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .revisao-valor-box {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .detalhes-card {
+    padding: 20px;
+  }
+
+  .detalhes-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .detalhes-acoes {
+    flex-direction: column;
+  }
+
+  .detalhes-acoes .btn {
+    width: 100%;
+  }
+
+  .cancelamento-card {
+    padding: 28px 20px;
+  }
+
+  .cancelamento-acoes {
+    flex-direction: column;
+  }
+
+  .cancelamento-acoes .btn {
+    width: 100%;
+  }
+
+  .sucesso-card {
+    padding: 28px 20px;
+  }
+
+  .sucesso-titulo {
+    font-size: 22px;
+  }
+
+  .atendimento-laudo-card {
+    padding: 20px;
+  }
+
+  .atendimento-acoes {
+    flex-direction: column;
+  }
+
+  .atendimento-acoes .btn {
+    width: 100%;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    padding: 16px 20px;
+  }
+
+  .card-dados {
+    padding: 20px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .checkbox-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filtros-consulta {
+    width: 100%;
+    padding: 4px;
+  }
+
+  .filtro-btn {
+    flex: 1 1 calc(50% - 8px);
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .filtro-count {
+    min-width: 20px;
+    height: 20px;
+    font-size: 11px;
+  }
+
+  .section-header-flex {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .section-header-flex .btn {
+    width: 100%;
+  }
+
+  .consulta-item-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .consulta-item-card .btn {
+    width: 100%;
+  }
+
+  .laudo-card,
+  .historico-card {
+    padding: 16px;
+  }
+
+  .laudo-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* media queries: telas muito pequenas */
+@media (max-width: 380px) {
+  .dias-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filtro-btn {
+    flex: 1 1 100%;
+  }
+
+  .stepper {
+    flex-wrap: wrap;
+  }
+
+  .step span {
+    display: none;
+  }
+}
