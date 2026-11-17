@@ -5,3 +5,8 @@ Corrigir e implementar as seguintes funcionalidades no projeto:
 4. Integração com o Back-end: substituir as simulações do Front-end por requisições à API do Back-end, garantindo a comunicação correta entre as camadas do sistema.
 5. Persistência dos dados: garantir que os agendamentos sejam registrados no banco de dados real e possam ser consultados e atualizados corretamente.
 7. obs pagina enums repositório da up kevin
+8 tira teleconsulta 
+9 tira condiçao de saude e so deixa a condicao mo agendamento
+acresenta hapvoida.
+10 de alguma forma fazero emeial ser funcional
+
