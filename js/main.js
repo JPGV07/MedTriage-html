@@ -1,3 +1,4 @@
+// Gera hash SHA-256 da senha para não armazenar em texto puro
 async function hashPassword(password) {
   const msgBuffer = new TextEncoder().encode(password);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -5,10 +6,12 @@ async function hashPassword(password) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Monta o identificador de data local no formato YYYY-MM-DD
 function gerarIdDataLocal(ano, mes, dia) {
   return `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
 }
 
+// Banco estático de médicos de exemplo (usado na primeira execução)
 const dbMedicos = [
   { id: 1, nome: "Dr. Carlos Silva", especialidade: "Oftalmologista", cidade: "João Pessoa", crm: "CRM-PB 12345", matricula: "MED1001", senha: "senha123", rating: 4.9, avaliacoes: 35, preco: "R$ 250,00", precoTeleconsulta: "R$ 180,00", rua: "Av. Epitácio Pessoa, 1000", bio: "Médico oftalmologista com 15 anos de experiência." },
   { id: 2, nome: "Dra. Beatriz Nogueira", especialidade: "Oftalmologista", cidade: "Campina Grande", crm: "CRM-PB 12346", matricula: "MED1002", senha: "senha123", rating: 4.8, avaliacoes: 22, preco: "R$ 240,00", precoTeleconsulta: "R$ 170,00", rua: "Rua Maciel Pinheiro, 150", bio: "Especialista em retina e glaucoma." },
@@ -20,6 +23,7 @@ const dbMedicos = [
   { id: 8, nome: "Dr. Paulo Henrique", especialidade: "Clínico geral", cidade: "Campina Grande", crm: "CRM-PB 11123", matricula: "MED4002", senha: "senha123", rating: 4.7, avaliacoes: 25, preco: "R$ 140,00", precoTeleconsulta: "R$ 110,00", rua: "Rua Venâncio Neiva, 500", bio: "Geriatria." }
 ];
 
+// Pacientes fictícios usados apenas quando ainda não há pacientes reais cadastrados
 const dbPacientesMock = [
   { nome: "Maria da Silva", cpf: "123.***.**-**", ultimoAtendimento: "15/10/2023" },
   { nome: "José Almeida", cpf: "456.***.**-**", ultimoAtendimento: "10/10/2023" },
@@ -27,11 +31,22 @@ const dbPacientesMock = [
   { nome: "Carlos Pereira", cpf: "321.***.**-**", ultimoAtendimento: "28/09/2023" }
 ];
 
+// Converte string de preço em número (trata R$, ponto de milhar e vírgula decimal)
 function extrairValorNumerico(precoString) {
   if (!precoString) return 0;
-  return parseFloat(precoString.replace("R$", "").replace(".", "").replace(",", ".").trim()) || 0;
+  let s = String(precoString).replace(/R\$\s*/g, "").trim();
+  if (s === "") return 0;
+  const temVirgula = s.includes(",");
+  const temPonto = s.includes(".");
+  if (temVirgula && temPonto) {
+    s = s.replace(/\./g, "").replace(",", ".");
+  } else if (temVirgula) {
+    s = s.replace(",", ".");
+  }
+  return parseFloat(s) || 0;
 }
 
+// Retorna o menor preço entre consulta presencial e teleconsulta
 function menorPreco(medico) {
   const v1 = extrairValorNumerico(medico.preco);
   const v2 = extrairValorNumerico(medico.precoTeleconsulta);
@@ -39,9 +54,12 @@ function menorPreco(medico) {
   return `R$ ${m.toFixed(2).replace(".", ",")}`;
 }
 
+// Junta os médicos estáticos com os médicos salvos no localStorage,
+// incluindo também os que foram cadastrados pelo formulário
 function obterMedicosAtualizados() {
   const profissionaisSalvos = JSON.parse(localStorage.getItem("@medtriage/profissionais")) || [];
-  return dbMedicos.map(medicoEstatico => {
+
+  const baseMedicos = dbMedicos.map(medicoEstatico => {
     const m = profissionaisSalvos.find(p => p.id === medicoEstatico.matricula);
     if (m) {
       return {
@@ -55,11 +73,35 @@ function obterMedicosAtualizados() {
     }
     return medicoEstatico;
   });
+
+  const matriculasExistentes = new Set(dbMedicos.map(m => m.matricula));
+  const novosMedicos = profissionaisSalvos
+    .filter(p => !matriculasExistentes.has(p.id) && p.ativo !== false)
+    .map(p => ({
+      id: p.id,
+      nome: p.nome,
+      especialidade: p.especialidade || "Clínico geral",
+      cidade: p.cidade || "",
+      crm: p.crm || "",
+      matricula: p.id,
+      senha: "",
+      rating: p.rating || 0,
+      avaliacoes: p.avaliacoes || 0,
+      preco: p.preco || "R$ 0,00",
+      precoTeleconsulta: p.precoTeleconsulta || "R$ 0,00",
+      rua: p.rua || "",
+      bio: p.bio || "Profissional cadastrado recentemente."
+    }));
+
+  return [...baseMedicos, ...novosMedicos];
 }
 
+// Lista de pacientes usada na busca do dashboard médico.
+// Usa pacientes reais se existirem, senão usa os mocks.
 function obterListaPacientesBusca() {
   const pacientes = JSON.parse(localStorage.getItem("@medtriage/pacientes")) || [];
   const consultas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
+
   const reais = pacientes.map(p => {
     const ultima = consultas
       .filter(c => c.pacienteId === p.id && c.status === "Realizada")
@@ -70,14 +112,17 @@ function obterListaPacientesBusca() {
       ultimoAtendimento: ultima ? ultima.dataFormatada : "-"
     };
   });
+
   if (reais.length > 0) return reais;
   return dbPacientesMock;
 }
 
+// Aplica o tema verde nas telas do médico
 function aplicarTemaMedico() {
   document.body.classList.add("theme-professional");
 }
 
+// Máscara de CPF (progressiva): 000.000.000-00
 function mascararCPF(valor) {
   let v = valor.replace(/\D/g, "").slice(0, 11);
   v = v.replace(/(\d{3})(\d)/, "$1.$2");
@@ -86,30 +131,55 @@ function mascararCPF(valor) {
   return v;
 }
 
+// Remove tudo que não for dígito
 function somenteDigitos(s) {
   return s.replace(/\D/g, "");
 }
 
+// Valida a estrutura do CRM e padroniza para CRM-UF 12345.
+// Esta validação verifica apenas o formato, não confirma o registro no CFM/CRM.
+function normalizarCRM(valor) {
+  const texto = String(valor || "").trim().toUpperCase().replace(/\s+/g, " ");
+  const estados = new Set([
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+    "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+    "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+  ]);
+
+  const ufAntes = texto.match(/^(?:CRM[\s-]*)?([A-Z]{2})[\s/-]*(\d{4,7})$/);
+  const ufDepois = texto.match(/^(?:CRM[\s-]*)?(\d{4,7})[\s/-]*([A-Z]{2})$/);
+  const uf = ufAntes ? ufAntes[1] : ufDepois ? ufDepois[2] : "";
+  const numero = ufAntes ? ufAntes[2] : ufDepois ? ufDepois[1] : "";
+
+  if (!uf || !estados.has(uf) || !numero) return null;
+  return `CRM-${uf} ${numero}`;
+}
+
+// Verifica se o texto digitado parece um CPF (só dígitos, pontos e hífens)
 function pareceCPF(raw) {
   if (somenteDigitos(raw).length === 0) return false;
   return raw.replace(/[\d.\-\s]/g, "").length === 0;
 }
 
+// Salva a matrícula do médico escolhido e vai para o perfil público
 window.salvarMedicoSelecionado = function(matricula) {
   localStorage.setItem("@medtriage/medico-selecionado", matricula);
   window.location.href = "perfil_medico.html";
 };
 
+// Abre os detalhes de uma consulta
 window.abrirDetalhes = function(idConsulta) {
   localStorage.setItem("@medtriage/consulta-selecionada", idConsulta);
   window.location.href = "detalhes_consulta.html";
 };
 
+// Abre o histórico de um paciente (a partir do dashboard médico)
 window.abrirHistoricoPaciente = function(nome, cpf) {
   localStorage.setItem("@medtriage/historico-paciente", JSON.stringify({ nome, cpf }));
   window.location.href = "medico_historico.html";
 };
 
+// Inicia o atendimento da primeira consulta aguardando
 window.iniciarAtendimento = function() {
   const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
   if (!sessao) return;
@@ -120,6 +190,7 @@ window.iniciarAtendimento = function() {
   window.location.href = "atendimento.html";
 };
 
+// Inicia o atendimento de uma consulta específica
 window.iniciarAtendimentoEspecifico = function(idConsulta) {
   localStorage.setItem("@medtriage/consulta-atendimento", idConsulta);
   window.location.href = "atendimento.html";
@@ -129,20 +200,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let perfilAtivo = "paciente";
 
+  // Semeia o banco de profissionais no localStorage se ainda estiver vazio
   const profissionaisSalvos = JSON.parse(localStorage.getItem("@medtriage/profissionais"));
   if (!profissionaisSalvos || profissionaisSalvos.length === 0) {
     const paraSalvar = [];
     for (const med of dbMedicos) {
       const hash = await hashPassword(med.senha);
       paraSalvar.push({
-        id: med.matricula, nome: med.nome, senhaHash: hash, crm: med.crm,
-        especialidade: med.especialidade, cidade: med.cidade, rua: med.rua,
-        preco: med.preco, precoTeleconsulta: med.precoTeleconsulta
+        id: med.matricula,
+        nome: med.nome,
+        senhaHash: hash,
+        crm: med.crm,
+        especialidade: med.especialidade,
+        cidade: med.cidade,
+        rua: med.rua,
+        preco: med.preco,
+        precoTeleconsulta: med.precoTeleconsulta
       });
     }
     localStorage.setItem("@medtriage/profissionais", JSON.stringify(paraSalvar));
   }
 
+  // Mostrar/ocultar senha (ícone do olho)
   document.querySelectorAll(".toggle-password").forEach(btn => {
     btn.addEventListener("click", (e) => {
       const wrapper = e.currentTarget.closest('.input-wrapper');
@@ -152,6 +231,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
+  // Tela de login
   const btnPaciente = document.getElementById("btn-paciente");
   const btnProfissional = document.getElementById("btn-profissional");
   const labelId = document.getElementById("label-id");
@@ -160,6 +240,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const linkEsqueciSenha = document.getElementById("link-esqueci-senha");
 
   if (btnPaciente && btnProfissional) {
+
+    // Aba "Sou paciente"
     btnPaciente.addEventListener("click", () => {
       perfilAtivo = "paciente";
       document.body.classList.remove("theme-professional");
@@ -168,9 +250,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       labelId.textContent = "CPF";
       inputId.placeholder = "000.000.000-00";
       inputId.value = "";
-      if (firstTimeBox) firstTimeBox.style.display = "block";
+      if (firstTimeBox) {
+        firstTimeBox.style.display = "block";
+        const p = firstTimeBox.querySelector("p");
+        const a = firstTimeBox.querySelector("a");
+        if (p) p.textContent = "Primeira vez aqui?";
+        if (a) { a.href = "cadastro.html"; a.textContent = "Criar meu acesso"; }
+      }
     });
 
+    // Aba "Sou profissional"
     btnProfissional.addEventListener("click", () => {
       perfilAtivo = "profissional";
       document.body.classList.add("theme-professional");
@@ -179,9 +268,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       labelId.textContent = "Matrícula";
       inputId.placeholder = "Digite sua matrícula";
       inputId.value = "";
-      if (firstTimeBox) firstTimeBox.style.display = "none";
+      if (firstTimeBox) {
+        firstTimeBox.style.display = "block";
+        const p = firstTimeBox.querySelector("p");
+        const a = firstTimeBox.querySelector("a");
+        if (p) p.textContent = "Primeira vez aqui?";
+        if (a) { a.href = "cadastro_medico.html"; a.textContent = "Cadastrar como médico"; }
+      }
     });
 
+    // Formata o que é digitado conforme o perfil ativo
     inputId.addEventListener("input", function (e) {
       if (perfilAtivo === "profissional") {
         e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
@@ -190,15 +286,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       e.target.value = mascararCPF(e.target.value);
     });
 
+    // Guarda qual perfil está ativo para a tela de recuperação de senha
     if (linkEsqueciSenha) {
       linkEsqueciSenha.addEventListener("click", () => {
         localStorage.setItem("@medtriage/reset-perfil", perfilAtivo);
       });
     }
 
+    // Login
     document.getElementById("login-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       let tentativas = parseInt(localStorage.getItem("@medtriage/tentativas") || "0");
+
       if (tentativas >= 5) {
         const quer = confirm("Acesso bloqueado! Deseja redefinir sua senha?");
         if (quer) {
@@ -207,12 +306,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         return;
       }
+
       const idDigitado = inputId.value.trim();
       const senhaDigitada = document.getElementById("senha").value;
       const storageKey = perfilAtivo === "paciente" ? "@medtriage/pacientes" : "@medtriage/profissionais";
       const usuarios = JSON.parse(localStorage.getItem(storageKey)) || [];
       const user = usuarios.find(u => u.id === idDigitado);
+
       if (!user) return alert(`Erro: ${perfilAtivo === "paciente" ? "CPF" : "Matrícula"} não encontrado(a).`);
+
       const hash = await hashPassword(senhaDigitada);
       if (user.senhaHash === hash) {
         localStorage.setItem("@medtriage/tentativas", "0");
@@ -227,12 +329,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // Tela de cadastro do paciente
   const formCadastro = document.getElementById("cadastro-form");
   if (formCadastro) {
     const inputCadastroId = document.getElementById("input-cadastro-id");
     inputCadastroId.addEventListener("input", function (e) {
       e.target.value = mascararCPF(e.target.value);
     });
+
     formCadastro.addEventListener("submit", async (e) => {
       e.preventDefault();
       const nome = document.getElementById("nome-cadastro").value.trim();
@@ -240,16 +344,23 @@ document.addEventListener("DOMContentLoaded", async () => {
       const senha = document.getElementById("nova-senha").value;
       const repetir = document.getElementById("repetir-senha").value;
       const email = document.getElementById("email-cadastro").value.trim();
+
       if (nome.length < 3) return alert("Insira seu nome completo.");
       if (senha !== repetir) return alert("As senhas não coincidem!");
       if (senha.length < 6) return alert("Senha muito curta.");
       if (idValue.length < 14) return alert("CPF incompleto.");
       if (email !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert("E-mail inválido.");
+
       const storageKey = "@medtriage/pacientes";
       const usuarios = JSON.parse(localStorage.getItem(storageKey)) || [];
       if (usuarios.some(u => u.id === idValue)) return alert("CPF já cadastrado.");
+
       const hash = await hashPassword(senha);
-      const novo = { id: idValue, nome, senhaHash: hash, email, telefone: "", nascimento: "", sexo: "", genero: "", peso: "", altura: "", doencas: [], deficiencias: [] };
+      const novo = {
+        id: idValue, nome, senhaHash: hash, email,
+        telefone: "", nascimento: "", sexo: "", genero: "",
+        peso: "", altura: "", doencas: [], deficiencias: []
+      };
       usuarios.push(novo);
       localStorage.setItem(storageKey, JSON.stringify(usuarios));
       localStorage.setItem("@medtriage/tentativas", "0");
@@ -259,11 +370,118 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // Tela de cadastro do médico
+  const formCadastroMedico = document.getElementById("cadastro-medico-form");
+  if (formCadastroMedico) {
+    document.body.classList.add("theme-professional");
+
+    const inputMatricula = document.getElementById("medico-matricula");
+    const inputCrm = document.getElementById("medico-crm");
+
+    // Só letras e números na matrícula, tudo em maiúsculo
+    inputMatricula.addEventListener("input", (e) => {
+      e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    });
+
+    // CRM em maiúsculo
+    inputCrm.addEventListener("input", (e) => {
+      e.target.value = e.target.value.toUpperCase();
+    });
+
+        formCadastroMedico.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const nome = document.getElementById("medico-nome").value.trim();
+      const matricula = inputMatricula.value.trim();
+      const crm = inputCrm.value.trim();
+      const especialidade = document.getElementById("medico-especialidade").value;
+      const cidade = document.getElementById("medico-cidade").value;
+      const bairro = document.getElementById("medico-bairro").value.trim();
+      const rua = document.getElementById("medico-rua").value.trim();
+      const precoRaw = document.getElementById("medico-preco").value.trim();
+      const precoTeleRaw = document.getElementById("medico-preco-tele").value.trim();
+      const email = document.getElementById("medico-email").value.trim();
+      const telefone = document.getElementById("medico-telefone").value.trim();
+      const bioInput = document.getElementById("medico-bio").value.trim();
+      const senha = document.getElementById("medico-senha").value;
+      const repetir = document.getElementById("medico-repetir-senha").value;
+
+      if (nome.length < 3) return alert("Informe seu nome completo.");
+      if (matricula.length < 4) return alert("Matrícula muito curta (mínimo 4 caracteres).");
+      if (!matricula.startsWith("MED")) return alert("A matrícula deve começar com 'MED' (ex: MED5001).");
+      const crmNormalizado = normalizarCRM(crm);
+      if (!crm) return alert("Informe seu CRM.");
+      if (!crmNormalizado) return alert("CRM inválido. Use o formato CRM-UF 12345 (ex.: CRM-PB 12345).");
+      if (!especialidade) return alert("Selecione sua especialidade.");
+      if (!cidade) return alert("Selecione sua cidade.");
+      if (!bairro) return alert("Informe o bairro do consultório.");
+      if (!rua) return alert("Informe o endereço do consultório.");
+      const aceiteTermos = formCadastroMedico.querySelector('input[type="checkbox"]');
+      if (aceiteTermos && !aceiteTermos.checked) return alert("É necessário aceitar os termos para continuar.");
+      if (email !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert("E-mail inválido.");
+
+      const precoNum = extrairValorNumerico(precoRaw);
+      const precoTeleNum = extrairValorNumerico(precoTeleRaw);
+      if (precoNum <= 0) return alert("Informe um preço válido para a consulta presencial.");
+      if (precoTeleNum <= 0) return alert("Informe um preço válido para a teleconsulta.");
+
+      const preco = `R$ ${precoNum.toFixed(2).replace(".", ",")}`;
+      const precoTeleconsulta = `R$ ${precoTeleNum.toFixed(2).replace(".", ",")}`;
+
+      if (senha !== repetir) return alert("As senhas não coincidem.");
+      if (senha.length < 6) return alert("Senha muito curta (mínimo 6 caracteres).");
+
+      const storageKey = "@medtriage/profissionais";
+      const profs = JSON.parse(localStorage.getItem(storageKey)) || [];
+      const existeEmDb = dbMedicos.some(m => m.matricula === matricula);
+      const existeEmProfs = profs.some(p => p.id === matricula);
+      if (existeEmDb || existeEmProfs) return alert("Matrícula já cadastrada. Escolha outra.");
+
+      const crmJaCadastrado = [...dbMedicos, ...profs].some(m =>
+        normalizarCRM(m.crm) === crmNormalizado
+      );
+      if (crmJaCadastrado) return alert("Este CRM já está cadastrado.");
+
+      // Junta rua + bairro para o endereço completo exibido no perfil
+      const enderecoCompleto = `${rua} - ${bairro}`;
+      const bioFinal = bioInput || `Médico(a) ${especialidade} em ${cidade}.`;
+
+      const hash = await hashPassword(senha);
+      const novo = {
+        id: matricula,
+        nome,
+        senhaHash: hash,
+        crm: crmNormalizado,
+        especialidade,
+        cidade,
+        bairro,
+        rua: enderecoCompleto,
+        preco,
+        precoTeleconsulta,
+        email,
+        telefone,
+        bio: bioFinal,
+        rating: 0,
+        avaliacoes: 0,
+        ativo: true
+      };
+      profs.push(novo);
+      localStorage.setItem(storageKey, JSON.stringify(profs));
+      localStorage.setItem("@medtriage/tentativas", "0");
+      localStorage.setItem("@medtriage/sessao", JSON.stringify(novo));
+
+      alert("Conta criada com sucesso!");
+      window.location.href = "medico_dashboard.html";
+    });
+  }
+
+  // Recuperação de senha
   const formRecuperar = document.getElementById("recuperar-form");
   if (formRecuperar) {
     const perfilReset = localStorage.getItem("@medtriage/reset-perfil") || "paciente";
     const labelRecuperar = document.getElementById("label-recuperar-id");
     const inputRecuperar = document.getElementById("input-recuperar-id");
+
     if (perfilReset === "profissional") {
       document.body.classList.add("theme-professional");
       labelRecuperar.textContent = "Matrícula";
@@ -278,17 +496,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         e.target.value = mascararCPF(e.target.value);
       });
     }
+
     formRecuperar.addEventListener("submit", async (e) => {
       e.preventDefault();
       const idRecuperar = document.getElementById("input-recuperar-id").value.trim();
       const novaSenha = document.getElementById("nova-senha-recuperar").value;
       const repetirSenha = document.getElementById("repetir-senha-recuperar").value;
+
       if (novaSenha !== repetirSenha) return alert("As senhas não coincidem!");
       if (novaSenha.length < 6) return alert("Senha curta.");
+
       const storageKey = perfilReset === "paciente" ? "@medtriage/pacientes" : "@medtriage/profissionais";
       const usuarios = JSON.parse(localStorage.getItem(storageKey)) || [];
       const idx = usuarios.findIndex(u => u.id === idRecuperar);
       if (idx === -1) return alert("Não encontrado.");
+
       usuarios[idx].senhaHash = await hashPassword(novaSenha);
       localStorage.setItem(storageKey, JSON.stringify(usuarios));
       localStorage.setItem("@medtriage/tentativas", "0");
@@ -298,6 +520,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // Logout
   const btnLogout = document.getElementById("btn-logout");
   if (btnLogout) {
     btnLogout.addEventListener("click", (e) => {
@@ -308,10 +531,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // Dashboard do paciente
   const welcomeTitle = document.getElementById("welcome-title");
   if (welcomeTitle && window.location.pathname.includes("paciente_dashboard")) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     if (!sessao || sessao.id.includes("MED")) { alert("Acesso negado."); window.location.replace("index.html"); return; }
+
     welcomeTitle.textContent = `Olá, ${sessao.nome || 'Paciente'}`;
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome || 'Paciente'}`;
 
@@ -362,6 +587,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  // Detalhes da consulta
   const detalheData = document.getElementById("detalhe-data");
   if (detalheData) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
@@ -397,6 +623,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // Reagendamento
   const diasGridReagendar = document.getElementById("dias-grid");
   if (diasGridReagendar && window.location.pathname.includes("reagendar_consulta")) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
@@ -422,7 +649,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       let lbl = i === 0 ? "Hoje" : (i === 1 ? "Amanhã" : nomes[data.getDay()]);
       const d = String(data.getDate()).padStart(2, '0');
       const m = String(data.getMonth() + 1).padStart(2, '0');
-      dias.push({ id: gerarIdDataLocal(data.getFullYear(), data.getMonth() + 1, data.getDate()), labelSemana: lbl, labelData: `${d}/${m}` });
+      dias.push({
+        id: gerarIdDataLocal(data.getFullYear(), data.getMonth() + 1, data.getDate()),
+        labelSemana: lbl,
+        labelData: `${d}/${m}`
+      });
     }
 
     const renderDias = () => {
@@ -491,6 +722,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderDias(); renderHorarios(); atualizarResumo();
   }
 
+  // Cancelamento
   const cancelData = document.getElementById("cancel-data");
   if (cancelData) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
@@ -509,13 +741,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("btn-confirmar-cancelamento").addEventListener("click", () => {
       const idx = consultas.findIndex(x => x.id === id);
-      if (idx !== -1) { consultas[idx].status = "Cancelada"; localStorage.setItem("@medtriage/consultas", JSON.stringify(consultas)); }
+      if (idx !== -1) {
+        consultas[idx].status = "Cancelada";
+        localStorage.setItem("@medtriage/consultas", JSON.stringify(consultas));
+      }
       localStorage.removeItem("@medtriage/consulta-cancelar");
       alert("Consulta cancelada.");
       window.location.href = "paciente_dashboard.html";
     });
   }
 
+  // Meus dados
   const formMeusDados = document.getElementById("form-meus-dados");
   if (formMeusDados) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
@@ -532,6 +768,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("dados-peso").value = sessao.peso || "";
     document.getElementById("dados-altura").value = sessao.altura || "";
 
+    // Máscara de telefone
     const inputTel = document.getElementById("dados-telefone");
     inputTel.addEventListener("input", function(e) {
       let v = e.target.value.replace(/\D/g, "").substring(0, 11);
@@ -543,6 +780,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const checkD = document.querySelectorAll(".check-doenca");
     checkD.forEach(cb => { cb.checked = (sessao.doencas || []).includes(cb.value); });
+
     const checkDef = document.querySelectorAll(".check-deficiencia");
     checkDef.forEach(cb => { cb.checked = (sessao.deficiencias || []).includes(cb.value); });
 
@@ -559,6 +797,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const doencas = Array.from(checkD).filter(cb => cb.checked).map(cb => cb.value);
       if (doencas.length > 1 && doencas.includes("Nenhuma")) doencas.splice(doencas.indexOf("Nenhuma"), 1);
+
       const defs = Array.from(checkDef).filter(cb => cb.checked).map(cb => cb.value);
       if (defs.length > 1 && defs.includes("Nenhuma")) defs.splice(defs.indexOf("Nenhuma"), 1);
 
@@ -566,18 +805,23 @@ document.addEventListener("DOMContentLoaded", async () => {
       const storageKey = "@medtriage/pacientes";
       const usuarios = JSON.parse(localStorage.getItem(storageKey)) || [];
       const idx = usuarios.findIndex(u => u.id === sessao.id);
-      if (idx !== -1) { usuarios[idx] = atualizada; localStorage.setItem(storageKey, JSON.stringify(usuarios)); }
+      if (idx !== -1) {
+        usuarios[idx] = atualizada;
+        localStorage.setItem(storageKey, JSON.stringify(usuarios));
+      }
       localStorage.setItem("@medtriage/sessao", JSON.stringify(atualizada));
       alert("Dados salvos!");
       window.location.href = "paciente_dashboard.html";
     });
   }
 
+  // Busca de especialistas
   const listaMedicos = document.getElementById("lista-medicos");
   if (listaMedicos) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     if (!sessao || sessao.id.includes("MED")) { window.location.replace("index.html"); return; }
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
+
     const filtroEsp = document.getElementById("filtro-especialidade");
     const filtroCid = document.getElementById("filtro-cidade");
     const btnBuscar = document.getElementById("btn-buscar");
@@ -587,7 +831,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const render = (lista) => {
       listaMedicos.innerHTML = "";
       tituloRes.textContent = `${lista.length} médicos encontrados`;
-      if (lista.length === 0) { listaMedicos.innerHTML = "<p style='color: var(--text-muted); padding: 20px 0;'>Nenhum médico encontrado.</p>"; return; }
+      if (lista.length === 0) {
+        listaMedicos.innerHTML = "<p style='color: var(--text-muted); padding: 20px 0;'>Nenhum médico encontrado.</p>";
+        return;
+      }
       lista.forEach(m => {
         const card = document.createElement("div");
         card.className = "doctor-card";
@@ -614,14 +861,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       const esp = filtroEsp.value, cid = filtroCid.value;
       render(medicos.filter(m => (esp === "Todas" || m.especialidade === esp) && m.cidade === cid));
     });
+
     render(medicos.filter(m => m.cidade === "João Pessoa"));
   }
 
+  // Dashboard do médico
   const tabelaMedico = document.getElementById("tabela-pacientes-body");
   if (tabelaMedico) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     if (!sessao || !sessao.id.includes("MED")) { window.location.replace("index.html"); return; }
     aplicarTemaMedico();
+
     document.getElementById("welcome-title").textContent = `Olá, ${sessao.nome}`;
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
 
@@ -644,6 +894,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (cardSem) cardSem.style.display = "flex";
     }
 
+    // Estatísticas
     const totalPacEl = document.getElementById("total-pacientes");
     if (totalPacEl) {
       const minhas = consultas.filter(c => c.medicoMatricula === sessao.id);
@@ -655,6 +906,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("total-atendimentos").textContent = atendimentosRealizados;
     }
 
+    // Busca por CPF
     const inputBusca = document.getElementById("busca-paciente-cpf");
     const btnLimparCpf = document.getElementById("btn-limpar-cpf");
     const resultadoBusca = document.getElementById("resultado-busca");
@@ -701,16 +953,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (inputBusca) {
       inputBusca.addEventListener("input", function (e) {
         e.target.value = mascararCPF(e.target.value);
-        if (btnLimparCpf) {
-          btnLimparCpf.style.display = e.target.value ? "flex" : "none";
-        }
+        if (btnLimparCpf) btnLimparCpf.style.display = e.target.value ? "flex" : "none";
 
         const termo = e.target.value.replace(/\D/g, "");
         if (termo.length === 0) {
           resultadoBusca.style.display = "none";
           return;
         }
-
         const filtrados = filtrarPorTermo(termo);
         resultadoBusca.style.display = "block";
         renderTabelaFiltrada(filtrados);
@@ -747,7 +996,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const todosNaFila = filtrados.every(p => verificarNaFila(p.nome));
         if (todosNaFila) {
           setTimeout(() => {
-            alert("⚠️ Atenção: Todos os pacientes encontrados já estão na fila de atendimento (Aguardando).\n\nFinalize um atendimento antes de iniciar outro.");
+            alert("Atenção: todos os pacientes encontrados já estão na fila de atendimento (Aguardando).\n\nFinalize um atendimento antes de iniciar outro.");
           }, 300);
         }
       }
@@ -762,13 +1011,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  // Perfil do médico (edição)
   const formPerfilMedico = document.getElementById("form-perfil-medico");
   if (formPerfilMedico) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     if (!sessao || !sessao.id.includes("MED")) { window.location.replace("index.html"); return; }
     aplicarTemaMedico();
+
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
     const db = dbMedicos.find(m => m.matricula === sessao.id) || {};
+
     document.getElementById("perfil-nome").value = sessao.nome || "";
     document.getElementById("perfil-matricula").value = sessao.id || "";
     document.getElementById("perfil-crm").value = sessao.crm || "";
@@ -788,24 +1040,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const atualizada = { ...sessao, nome, cidade, rua, preco, precoTeleconsulta };
       localStorage.setItem("@medtriage/sessao", JSON.stringify(atualizada));
+
       const storageKey = "@medtriage/profissionais";
       const profs = JSON.parse(localStorage.getItem(storageKey)) || [];
       const idx = profs.findIndex(m => m.id === sessao.id);
-      if (idx !== -1) { profs[idx] = { ...profs[idx], nome, cidade, rua, preco, precoTeleconsulta }; localStorage.setItem(storageKey, JSON.stringify(profs)); }
+      if (idx !== -1) {
+        profs[idx] = { ...profs[idx], nome, cidade, rua, preco, precoTeleconsulta };
+        localStorage.setItem(storageKey, JSON.stringify(profs));
+      }
       alert("Perfil atualizado!");
       window.location.href = "medico_dashboard.html";
     });
   }
 
+  // Perfil público do médico
   const perfilPublicoContainer = document.getElementById("perfil-publico-container");
   if (perfilPublicoContainer) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     if (!sessao) { window.location.replace("index.html"); return; }
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
+
     const matricula = localStorage.getItem("@medtriage/medico-selecionado");
     const medicos = obterMedicosAtualizados();
     const m = medicos.find(x => x.matricula === matricula);
     if (!m) { alert("Médico não selecionado."); window.location.replace("buscar_especialista.html"); return; }
+
     document.getElementById("pub-nome").textContent = m.nome;
     document.getElementById("pub-especialidade").textContent = m.especialidade;
     document.getElementById("pub-crm").textContent = m.crm;
@@ -817,15 +1076,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("pub-endereco").textContent = `${m.rua}, ${m.cidade}`;
   }
 
+  // Agendamento etapa 1
   const diasGrid = document.getElementById("dias-grid");
   if (diasGrid && window.location.pathname.includes("agendar_etapa1")) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     if (!sessao) { window.location.replace("index.html"); return; }
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
+
     const matricula = localStorage.getItem("@medtriage/medico-selecionado");
     const medicos = obterMedicosAtualizados();
     const m = medicos.find(x => x.matricula === matricula);
     if (!m) { alert("Médico não selecionado."); window.location.replace("buscar_especialista.html"); return; }
+
     document.getElementById("resumo-nome").textContent = m.nome;
     document.getElementById("resumo-especialidade").textContent = m.especialidade;
     document.getElementById("resumo-valor").textContent = m.preco;
@@ -839,7 +1101,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       let lbl = i === 0 ? "Hoje" : (i === 1 ? "Amanhã" : nomes[data.getDay()]);
       const d = String(data.getDate()).padStart(2, '0');
       const mo = String(data.getMonth() + 1).padStart(2, '0');
-      dias.push({ id: gerarIdDataLocal(data.getFullYear(), data.getMonth() + 1, data.getDate()), labelSemana: lbl, labelData: `${d}/${mo}` });
+      dias.push({
+        id: gerarIdDataLocal(data.getFullYear(), data.getMonth() + 1, data.getDate()),
+        labelSemana: lbl,
+        labelData: `${d}/${mo}`
+      });
     }
 
     const renderDias = () => {
@@ -902,8 +1168,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     btnAvancar.addEventListener("click", () => {
       const valorFinal = tipo === "Presencial" ? m.preco : m.precoTeleconsulta;
       localStorage.setItem("@medtriage/agendamento-temp", JSON.stringify({
-        medicoMatricula: m.matricula, medicoNome: m.nome, especialidade: m.especialidade,
-        valor: valorFinal, data: diaSel, horario: horSel, tipo
+        medicoMatricula: m.matricula,
+        medicoNome: m.nome,
+        especialidade: m.especialidade,
+        valor: valorFinal,
+        data: diaSel,
+        horario: horSel,
+        tipo
       }));
       window.location.href = "agendar_etapa2.html";
     });
@@ -911,6 +1182,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderDias(); renderHorarios(); atualizarResumo();
   }
 
+  // Agendamento etapa 2
   const formEtapa2 = document.getElementById("form-etapa2");
   if (formEtapa2) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
@@ -924,11 +1196,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("resumo-especialidade").textContent = a.especialidade;
     document.getElementById("resumo-tipo").textContent = a.tipo;
     document.getElementById("resumo-valor").textContent = a.valor;
+
     const partes = a.data.split("-");
     document.getElementById("resumo-horario").textContent = `${partes[2]}/${partes[1]} às ${a.horario}`;
 
     document.querySelectorAll('.tipo-consulta-grid .radio-card').forEach(card => {
-      card.addEventListener("click", (e) => {
+      card.addEventListener("click", () => {
         const input = card.querySelector('input');
         const grupo = input.getAttribute('name');
         document.querySelectorAll(`input[name="${grupo}"]`).forEach(inp => inp.closest('.radio-card').classList.remove('selected'));
@@ -942,11 +1215,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       const primeiraVez = document.querySelector('input[name="primeira-vez"]:checked').value;
       const convenio = document.getElementById("etapa2-convenio").value;
       const motivo = document.getElementById("etapa2-motivo").value.trim();
-      localStorage.setItem("@medtriage/agendamento-temp", JSON.stringify({ ...a, paraQuem, primeiraVez, convenio, motivo }));
+
+      localStorage.setItem("@medtriage/agendamento-temp", JSON.stringify({
+        ...a, paraQuem, primeiraVez, convenio, motivo
+      }));
       window.location.href = "agendar_etapa3.html";
     });
   }
 
+  // Agendamento etapa 3
   const btnConfirmar = document.getElementById("btn-confirmar");
   if (btnConfirmar) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
@@ -977,12 +1254,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     btnConfirmar.addEventListener("click", () => {
       const consulta = {
-        id: Date.now(), pacienteId: sessao.id, pacienteNome: sessao.nome,
-        medicoMatricula: a.medicoMatricula, medicoNome: a.medicoNome, especialidade: a.especialidade,
-        crm: m.crm || "", tipo: a.tipo, data: a.data, dataFormatada, horario: a.horario,
+        id: Date.now(),
+        pacienteId: sessao.id,
+        pacienteNome: sessao.nome,
+        medicoMatricula: a.medicoMatricula,
+        medicoNome: a.medicoNome,
+        especialidade: a.especialidade,
+        crm: m.crm || "",
+        tipo: a.tipo,
+        data: a.data,
+        dataFormatada,
+        horario: a.horario,
         endereco: a.tipo === "Teleconsulta" ? "Online" : `${m.rua}, ${m.cidade}`,
-        convenio: a.convenio, paraQuem: a.paraQuem, primeiraVez: a.primeiraVez, motivo: a.motivo,
-        valor: a.valor, status: "Aguardando", laudo: "", laudoRascunho: false, dataCriacao: new Date().toISOString()
+        convenio: a.convenio,
+        paraQuem: a.paraQuem,
+        primeiraVez: a.primeiraVez,
+        motivo: a.motivo,
+        valor: a.valor,
+        status: "Aguardando",
+        laudo: "",
+        laudoRascunho: false,
+        dataCriacao: new Date().toISOString()
       };
       const consultas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
       consultas.push(consulta);
@@ -993,13 +1285,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // Agendamento com sucesso
   const btnOk = document.getElementById("btn-ok");
   if (btnOk) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     if (!sessao) { window.location.replace("index.html"); return; }
+
     const consultas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
     if (consultas.length === 0) { alert("Nenhuma consulta."); window.location.replace("paciente_dashboard.html"); return; }
 
+    // Usa a consulta recém-criada (se existir) para não depender da última da lista
     const idRecem = parseInt(localStorage.getItem("@medtriage/consulta-recem-criada") || "0");
     let ultima = idRecem ? consultas.find(c => c.id === idRecem) : null;
     if (!ultima) ultima = consultas[consultas.length - 1];
@@ -1022,10 +1317,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     const inputWhats = cardWhats.querySelector("input");
 
     if (temEmail) detalheEmail.textContent = email;
-    else { detalheEmail.textContent = "Nenhum e-mail"; cardEmail.style.opacity = "0.5"; cardEmail.style.pointerEvents = "none"; inputEmail.disabled = true; }
+    else {
+      detalheEmail.textContent = "Nenhum e-mail";
+      cardEmail.style.opacity = "0.5";
+      cardEmail.style.pointerEvents = "none";
+      inputEmail.disabled = true;
+    }
 
     if (temTel) detalheWhats.textContent = tel;
-    else { detalheWhats.textContent = "Nenhum telefone"; cardWhats.style.opacity = "0.5"; cardWhats.style.pointerEvents = "none"; inputWhats.disabled = true; }
+    else {
+      detalheWhats.textContent = "Nenhum telefone";
+      cardWhats.style.opacity = "0.5";
+      cardWhats.style.pointerEvents = "none";
+      inputWhats.disabled = true;
+    }
 
     if (temEmail && temTel) { cardEmail.classList.add("selected"); inputEmail.checked = true; btnOk.disabled = false; }
     else if (temEmail) { cardEmail.classList.add("selected"); inputEmail.checked = true; btnOk.disabled = false; }
@@ -1046,19 +1351,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     btnOk.addEventListener("click", () => {
       const marcado = document.querySelector('input[name="metodo-confirmacao"]:checked');
       if (!marcado) { alert("Escolha como receber."); return; }
+
       const atualizadas = JSON.parse(localStorage.getItem("@medtriage/consultas")) || [];
       const alvo = atualizadas.find(c => c.id === ultima.id);
-      if (alvo) { alvo.metodoConfirmacao = marcado.value; localStorage.setItem("@medtriage/consultas", JSON.stringify(atualizadas)); }
+      if (alvo) {
+        alvo.metodoConfirmacao = marcado.value;
+        localStorage.setItem("@medtriage/consultas", JSON.stringify(atualizadas));
+      }
       localStorage.removeItem("@medtriage/consulta-recem-criada");
       window.location.href = "paciente_dashboard.html";
     });
   }
 
+  // Atendimento (médico)
   const textoLaudo = document.getElementById("texto-laudo");
   if (textoLaudo) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
     if (!sessao || !sessao.id.includes("MED")) { alert("Acesso negado."); window.location.replace("index.html"); return; }
     aplicarTemaMedico();
+
     document.getElementById("user-greeting").textContent = `Olá, ${sessao.nome}`;
 
     const id = parseInt(localStorage.getItem("@medtriage/consulta-atendimento"));
@@ -1078,13 +1389,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       const txt = textoLaudo.value.trim();
       if (txt === "") { alert("Escreva o laudo."); return; }
       const i = consultas.findIndex(x => x.id === id);
-      if (i !== -1) { consultas[i].laudo = txt; consultas[i].laudoRascunho = true; localStorage.setItem("@medtriage/consultas", JSON.stringify(consultas)); alert("Rascunho salvo!"); }
+      if (i !== -1) {
+        consultas[i].laudo = txt;
+        consultas[i].laudoRascunho = true;
+        localStorage.setItem("@medtriage/consultas", JSON.stringify(consultas));
+        alert("Rascunho salvo!");
+      }
     });
 
     document.getElementById("btn-finalizar").addEventListener("click", () => {
       const txt = textoLaudo.value.trim();
       if (txt === "") { alert("Escreva o laudo."); return; }
       if (!confirm("Finalizar? O laudo ficará visível para o paciente.")) return;
+
       const i = consultas.findIndex(x => x.id === id);
       if (i !== -1) {
         consultas[i].laudo = txt;
@@ -1099,6 +1416,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  // Laudos (paciente)
   const listaLaudos = document.getElementById("lista-laudos");
   if (listaLaudos) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
@@ -1109,9 +1427,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const meus = consultas.filter(c => c.pacienteId === sessao.id && c.status === "Realizada" && c.laudo && c.laudo.trim() !== "");
     const vazio = document.getElementById("laudos-vazio");
 
-    if (meus.length === 0) { listaLaudos.style.display = "none"; vazio.style.display = "block"; }
-    else {
-      listaLaudos.style.display = "block"; vazio.style.display = "none"; listaLaudos.innerHTML = "";
+    if (meus.length === 0) {
+      listaLaudos.style.display = "none";
+      vazio.style.display = "block";
+    } else {
+      listaLaudos.style.display = "block";
+      vazio.style.display = "none";
+      listaLaudos.innerHTML = "";
       meus.reverse().forEach(c => {
         const card = document.createElement("div");
         card.className = "laudo-card";
@@ -1127,6 +1449,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  // Histórico do paciente (médico)
   const listaHist = document.getElementById("lista-historico-medico");
   if (listaHist) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
@@ -1144,9 +1467,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const doPaciente = consultas.filter(c => c.pacienteNome === info.nome && c.status === "Realizada");
     const vazio = document.getElementById("historico-vazio");
 
-    if (doPaciente.length === 0) { listaHist.style.display = "none"; vazio.style.display = "block"; }
-    else {
-      listaHist.style.display = "block"; vazio.style.display = "none"; listaHist.innerHTML = "";
+    if (doPaciente.length === 0) {
+      listaHist.style.display = "none";
+      vazio.style.display = "block";
+    } else {
+      listaHist.style.display = "block";
+      vazio.style.display = "none";
+      listaHist.innerHTML = "";
       doPaciente.reverse().forEach(c => {
         const card = document.createElement("div");
         card.className = "historico-card";
@@ -1160,6 +1487,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  // Ver consultas (médico)
   const listaConsultasMedico = document.getElementById("lista-consultas-medico");
   if (listaConsultasMedico) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
@@ -1174,7 +1502,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const renderConsultas = (filtro) => {
       listaConsultasMedico.innerHTML = "";
       const filtradas = filtro === "todas" ? minhas : minhas.filter(c => c.status === filtro);
-      if (filtradas.length === 0) { listaConsultasMedico.style.display = "none"; vazio.style.display = "block"; return; }
+      if (filtradas.length === 0) {
+        listaConsultasMedico.style.display = "none";
+        vazio.style.display = "block";
+        return;
+      }
       listaConsultasMedico.style.display = "block";
       vazio.style.display = "none";
 
@@ -1213,6 +1545,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderConsultas("todas");
   }
 
+  // Histórico geral de atendimentos (médico)
   const listaHistAtend = document.getElementById("lista-historico-atendimentos");
   if (listaHistAtend) {
     const sessao = JSON.parse(localStorage.getItem("@medtriage/sessao"));
@@ -1246,9 +1579,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const renderHistAtend = (lista) => {
       listaHistAtend.innerHTML = "";
-      if (lista.length === 0) { listaHistAtend.style.display = "none"; if (vazio) vazio.style.display = "block"; return; }
+      if (lista.length === 0) {
+        listaHistAtend.style.display = "none";
+        if (vazio) vazio.style.display = "block";
+        return;
+      }
       listaHistAtend.style.display = "block";
       if (vazio) vazio.style.display = "none";
+
       [...lista].reverse().forEach(c => {
         const card = document.createElement("div");
         card.className = "historico-card";
@@ -1263,6 +1601,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     renderHistAtend(realizadas);
 
+    // Busca com máscara de CPF
     const busca = document.getElementById("busca-historico");
     if (busca) {
       const btnLimparBusca = document.getElementById("btn-limpar-busca");
@@ -1294,8 +1633,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       btnBuscarHist.addEventListener("click", () => {
         const termo = busca.value.trim().toLowerCase();
-        if (termo === "") renderHistAtend(realizadas);
-        else {
+        if (termo === "") {
+          renderHistAtend(realizadas);
+        } else {
           const termoDigitos = termo.replace(/\D/g, "");
           const filtradas = realizadas.filter(c =>
             c.pacienteNome.toLowerCase().includes(termo) ||
