@@ -36,3 +36,4 @@ Implementar as seguintes correções e melhorias no projeto MedTriage:
 **9. Funcionalidade de e-mail**
 - Implementar o funcionamento real da funcionalidade de e-mail.
 - Garantir que o sistema consiga enviar e-mails corretamente, utilizando uma integração adequada com o Back-end.
+- 
