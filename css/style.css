@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* variaveis globais */
 :root {
   --primary: #005A8D;
   --primary-hover: #004570;
@@ -11,6 +12,7 @@
   --radius: 8px;
 }
 
+/* tema do profissional */
 body.theme-professional {
   --primary: #0F766E;
   --primary-hover: #0D5D57;
@@ -18,10 +20,12 @@ body.theme-professional {
   --border-color: #A7F3D0;
 }
 
+/* transicoes suaves */
 body, .login-card, .tab-btn, .btn, input, .brand svg, .first-time-box {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
+/* reset */
 * {
   margin: 0;
   padding: 0;
@@ -35,7 +39,51 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ===== LOGIN E CADASTRO ===== */
+/* botoes genericos */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.btn-outline:hover {
+  background-color: rgba(0, 90, 141, 0.05);
+}
+
+.btn-perigo {
+  background: transparent;
+  color: #EF4444;
+  border: 1px solid #EF4444;
+}
+
+.btn-perigo:hover {
+  background: #FEF2F2;
+}
+
+/* login e cadastro */
 .login-wrapper {
   min-height: 100vh;
   display: flex;
@@ -159,39 +207,6 @@ body {
   margin-bottom: 24px;
 }
 
-.btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 14px;
-  border-radius: var(--radius);
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.btn-primary {
-  background-color: var(--primary);
-  color: white;
-  border: none;
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-hover);
-}
-
-.btn-outline {
-  background-color: transparent;
-  color: var(--primary);
-  border: 1px solid var(--primary);
-}
-
-.btn-outline:hover {
-  background-color: rgba(0, 90, 141, 0.05);
-}
-
 .first-time-box {
   margin-top: 32px;
   padding: 24px;
@@ -251,7 +266,7 @@ body {
   cursor: pointer;
 }
 
-/* ===== DASHBOARD DO PACIENTE ===== */
+/* header do paciente e do medico */
 .patient-header {
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--border-color);
@@ -265,6 +280,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
 }
 
 .patient-nav {
@@ -304,6 +320,7 @@ body {
   padding: 32px 20px;
 }
 
+/* dashboard paciente */
 .welcome-section {
   margin-bottom: 32px;
 }
@@ -326,6 +343,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
   margin-bottom: 32px;
 }
 
@@ -334,7 +352,6 @@ body {
   border: 1px solid var(--border-color);
   flex-direction: column;
   align-items: flex-start;
-  gap: 16px;
 }
 
 .appointment-info h2 {
@@ -423,7 +440,7 @@ body {
   text-decoration: underline;
 }
 
-/* ===== MEUS DADOS ===== */
+/* meus dados */
 .card-dados {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -487,7 +504,7 @@ body {
   accent-color: var(--primary);
 }
 
-/* ===== BUSCA DE ESPECIALISTAS ===== */
+/* busca de especialistas */
 .search-box {
   display: flex;
   gap: 16px;
@@ -595,7 +612,7 @@ body {
   font-size: 14px;
 }
 
-/* ===== PERFIL PÚBLICO DO MÉDICO ===== */
+/* perfil publico do medico */
 .back-link-page {
   display: inline-flex;
   align-items: center;
@@ -653,7 +670,7 @@ body {
   padding: 6px 14px;
   border-radius: 20px;
   margin-bottom: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .rating-estrela {
@@ -752,7 +769,7 @@ body {
   color: var(--primary);
 }
 
-/* ===== AGENDAMENTO (STEPPER + ETAPA 1) ===== */
+/* agendamento: stepper */
 .stepper {
   display: flex;
   align-items: center;
@@ -803,6 +820,7 @@ body {
   min-width: 20px;
 }
 
+/* agendamento: layout */
 .booking-layout {
   display: grid;
   grid-template-columns: 1fr 320px;
@@ -988,37 +1006,10 @@ body {
 .action-buttons {
   display: flex;
   gap: 16px;
+  flex-wrap: wrap;
 }
 
-/* ===== PERFIL DO MÉDICO (EDITAR) ===== */
-.valores-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.valor-box {
-  background: #F0F9FF;
-  border: 1px solid #BAE6FD;
-  border-radius: 12px;
-  padding: 20px;
-}
-
-.valor-label {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-  font-weight: 500;
-}
-
-.valor-preco {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--primary);
-}
-
-/* ===== ETAPA 2 ===== */
+/* etapa 2 */
 .label-pergunta {
   display: block;
   font-size: 14px;
@@ -1043,7 +1034,7 @@ body {
   border-color: var(--primary);
 }
 
-/* ===== ETAPA 3 (REVISÃO) ===== */
+/* etapa 3: revisao */
 .revisao-container {
   display: flex;
   justify-content: center;
@@ -1127,7 +1118,7 @@ body {
   color: var(--text-muted);
 }
 
-/* ===== AGENDAMENTO COM SUCESSO ===== */
+/* sucesso */
 .sucesso-wrapper {
   min-height: 100vh;
   display: flex;
@@ -1273,7 +1264,7 @@ body {
   font-size: 16px;
 }
 
-/* ===== DETALHES DA CONSULTA ===== */
+/* detalhes da consulta */
 .detalhes-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -1316,19 +1307,10 @@ body {
   gap: 16px;
   border-top: 1px solid var(--border-color);
   padding-top: 24px;
+  flex-wrap: wrap;
 }
 
-.btn-perigo {
-  background: transparent;
-  color: #EF4444;
-  border: 1px solid #EF4444;
-}
-
-.btn-perigo:hover {
-  background: #FEF2F2;
-}
-
-/* ===== MÚLTIPLAS CONSULTAS ===== */
+/* multiplas consultas */
 .multiplas-consultas-container {
   margin-bottom: 32px;
 }
@@ -1362,7 +1344,7 @@ body {
   margin-bottom: 2px;
 }
 
-/* ===== CANCELAMENTO ===== */
+/* cancelamento */
 .cancelamento-container {
   display: flex;
   justify-content: center;
@@ -1443,9 +1425,10 @@ body {
   display: flex;
   gap: 16px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
-/* ===== ATENDIMENTO (MÉDICO) ===== */
+/* atendimento medico */
 .atendimento-container {
   max-width: 900px;
 }
@@ -1513,7 +1496,7 @@ body {
   flex-wrap: wrap;
 }
 
-/* ===== LAUDOS E HISTÓRICO ===== */
+/* laudos e historico */
 .laudos-vazio {
   text-align: center;
   padding: 64px 24px;
@@ -1607,7 +1590,7 @@ body {
   white-space: pre-wrap;
 }
 
-/* ===== CARDS DE ESTATÍSTICAS DO MÉDICO ===== */
+/* cards de estatisticas do medico */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1657,86 +1640,549 @@ body {
   font-weight: 500;
   margin: 0;
 }
-/* ====== FILTROS DE CONSULTA ====== */
-        .filtros-consulta {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            padding: 6px;
-            margin-bottom: 24px;
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            width: fit-content;
-            max-width: 100%;
-        }
 
-        .filtro-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
-            border-radius: 8px;
-            border: 1px solid transparent;
-            background: transparent;
-            color: var(--text-muted);
-            font-size: 14px;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: background-color .2s, color .2s, border-color .2s;
-        }
+/* filtros de consulta */
+.filtros-consulta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px;
+  margin-bottom: 24px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  width: fit-content;
+  max-width: 100%;
+}
 
-        .filtro-btn:hover {
-            background: var(--bg-body);
-            color: var(--text-main);
-        }
+.filtro-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
 
-        .filtro-btn:focus-visible {
-            outline: 2px solid var(--primary);
-            outline-offset: 2px;
-        }
+.filtro-btn:hover {
+  background: var(--bg-body);
+  color: var(--text-main);
+}
 
-        .filtro-btn.active {
-            background: var(--primary);
-            color: #FFFFFF;
-        }
+.filtro-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
 
-        .filtro-btn svg { flex-shrink: 0; }
+.filtro-btn.active {
+  background: var(--primary);
+  color: #FFFFFF;
+}
 
-        .filtro-count {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 22px;
-            height: 22px;
-            padding: 0 7px;
-            border-radius: 11px;
-            background: rgba(0, 0, 0, .08);
-            font-size: 12px;
-            font-weight: 700;
-            line-height: 1;
-        }
+.filtro-btn svg {
+  flex-shrink: 0;
+}
 
-        .filtro-btn.active .filtro-count {
-            background: rgba(255, 255, 255, .25);
-            color: #FFFFFF;
-        }
+.filtro-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 11px;
+  background: rgba(0, 0, 0, 0.08);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
 
-        /* ====== EMPTY STATE ====== */
-        .laudos-vazio .btn-limpar-filtro {
-            width: auto;
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 14px;
-        }
+.filtro-btn.active .filtro-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
 
-        @media (max-width: 600px) {
-            .filtros-consulta {
-                width: 100%;
-            }
-            .filtro-btn {
-                flex: 1 1 calc(50% - 8px);
-                justify-content: center;
-            }
-        }
+.laudos-vazio .btn-limpar-filtro {
+  width: auto;
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+/* tabela de pacientes no dashboard medico */
+.table-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.table-container thead th {
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-body);
+}
+
+.table-container tbody td {
+  padding: 16px 20px;
+  font-size: 14px;
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.table-container tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-container tbody tr:hover {
+  background: var(--bg-body);
+}
+
+/* cabecalho flex para titulo e botao */
+.section-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.section-header-flex .section-title {
+  margin-bottom: 0;
+}
+
+.section-header-flex .btn {
+  width: auto;
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+/* titulo grande usado em algumas telas */
+.welcome-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 24px;
+}
+
+/* local da consulta no card */
+.appointment-location {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* card padrao para formularios do medico e paciente */
+.card-dados .section-title:first-child {
+  margin-top: 0;
+}
+
+/* media queries: tablet */
+@media (max-width: 900px) {
+  .dashboard-main {
+    padding: 24px 16px;
+  }
+
+  .patient-header-container {
+    flex-wrap: wrap;
+    row-gap: 12px;
+  }
+
+  .patient-nav {
+    order: 3;
+    width: 100%;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .patient-nav a {
+    white-space: nowrap;
+    font-size: 13px;
+  }
+
+  .patient-user-area {
+    margin-left: auto;
+  }
+
+  .booking-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-summary {
+    position: static;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .perfil-medico-card {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .endereco-texto {
+    justify-content: center;
+  }
+}
+
+/* media queries: mobile */
+@media (max-width: 600px) {
+  .login-card {
+    padding: 28px 20px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .patient-header {
+    padding: 12px 0;
+  }
+
+  .patient-header-container {
+    padding: 0 16px;
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  .brand {
+    font-size: 18px;
+    margin-bottom: 0;
+  }
+
+  .brand svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .patient-nav {
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .user-greeting {
+    display: none;
+  }
+
+  .dashboard-main {
+    padding: 20px 16px;
+  }
+
+  .welcome-section h1,
+  .welcome-title {
+    font-size: 22px;
+  }
+
+  .welcome-section p {
+    font-size: 14px;
+  }
+
+  .next-appointment-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+  }
+
+  .next-appointment-card .btn {
+    width: 100%;
+  }
+
+  .shortcuts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-box {
+    padding: 16px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box .btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .doctor-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+  }
+
+  .doctor-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .doctor-avatar {
+    width: 64px;
+    height: 64px;
+  }
+
+  .doctor-action {
+    width: 100%;
+    text-align: left;
+  }
+
+  .doctor-action .btn {
+    width: 100%;
+  }
+
+  .perfil-medico-card {
+    padding: 24px 20px;
+    gap: 16px;
+  }
+
+  .perfil-medico-avatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  .perfil-medico-info h1 {
+    font-size: 22px;
+  }
+
+  .perfil-secao-card {
+    padding: 20px;
+  }
+
+  .stepper {
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .step {
+    font-size: 12px;
+  }
+
+  .step-circle {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  .step-line {
+    min-width: 10px;
+  }
+
+  .tipo-consulta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dias-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .dia-item {
+    padding: 10px 6px;
+  }
+
+  .dia-semana {
+    font-size: 13px;
+  }
+
+  .dia-data {
+    font-size: 11px;
+  }
+
+  .horarios-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+  }
+
+  .btn-horario {
+    padding: 10px 6px;
+    font-size: 13px;
+  }
+
+  .booking-summary {
+    padding: 20px;
+  }
+
+  .action-buttons {
+    flex-direction: column-reverse;
+  }
+
+  .action-buttons .btn {
+    width: 100%;
+  }
+
+  .revisao-card {
+    padding: 20px;
+  }
+
+  .revisao-dados-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .revisao-valor-box {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .detalhes-card {
+    padding: 20px;
+  }
+
+  .detalhes-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .detalhes-acoes {
+    flex-direction: column;
+  }
+
+  .detalhes-acoes .btn {
+    width: 100%;
+  }
+
+  .cancelamento-card {
+    padding: 28px 20px;
+  }
+
+  .cancelamento-acoes {
+    flex-direction: column;
+  }
+
+  .cancelamento-acoes .btn {
+    width: 100%;
+  }
+
+  .sucesso-card {
+    padding: 28px 20px;
+  }
+
+  .sucesso-titulo {
+    font-size: 22px;
+  }
+
+  .atendimento-laudo-card {
+    padding: 20px;
+  }
+
+  .atendimento-acoes {
+    flex-direction: column;
+  }
+
+  .atendimento-acoes .btn {
+    width: 100%;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    padding: 16px 20px;
+  }
+
+  .card-dados {
+    padding: 20px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .checkbox-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filtros-consulta {
+    width: 100%;
+    padding: 4px;
+  }
+
+  .filtro-btn {
+    flex: 1 1 calc(50% - 8px);
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .filtro-count {
+    min-width: 20px;
+    height: 20px;
+    font-size: 11px;
+  }
+
+  .section-header-flex {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .section-header-flex .btn {
+    width: 100%;
+  }
+
+  .consulta-item-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .consulta-item-card .btn {
+    width: 100%;
+  }
+
+  .laudo-card,
+  .historico-card {
+    padding: 16px;
+  }
+
+  .laudo-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* media queries: telas muito pequenas */
+@media (max-width: 380px) {
+  .dias-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filtro-btn {
+    flex: 1 1 100%;
+  }
+
+  .stepper {
+    flex-wrap: wrap;
+  }
+
+  .step span {
+    display: none;
+  }
+}
