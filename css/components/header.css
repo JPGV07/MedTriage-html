@@ -1,0 +1,53 @@
+/* header do paciente e do medico */
+.patient-header {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  padding: 16px 0;
+}
+
+.patient-header-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.patient-nav {
+  display: flex;
+  gap: 24px;
+}
+
+.patient-nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding-bottom: 4px;
+  transition: color 0.2s;
+}
+
+.patient-nav a:hover {
+  color: var(--primary);
+}
+
+.patient-nav a.active {
+  color: var(--text-main);
+  font-weight: 600;
+  border-bottom: 2px solid var(--primary);
+}
+
+.patient-user-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.dashboard-main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}

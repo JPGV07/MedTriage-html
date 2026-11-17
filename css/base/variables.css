@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* variaveis globais */
+:root {
+  --primary: #005A8D;
+  --primary-hover: #004570;
+  --bg-body: #F4F7F9;
+  --bg-surface: #FFFFFF;
+  --text-main: #1E293B;
+  --text-muted: #64748B;
+  --border-color: #CBD5E1;
+  --radius: 8px;
+}
+
+/* tema do profissional */
+body.theme-professional {
+  --primary: #0F766E;
+  --primary-hover: #0D5D57;
+  --bg-body: #F0FDF4;
+  --border-color: #A7F3D0;
+}
+
+/* transicoes suaves */
+body, .login-card, .tab-btn, .btn, input, .brand svg, .first-time-box {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
