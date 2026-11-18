@@ -1,102 +1,106 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - MedTriage</title>
-  <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MedTriage</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <div class="login-wrapper">
-    <div class="login-card">
+    <div class="login-wrapper">
+        <div class="login-card">
 
-      <div class="brand">
-        <svg viewBox="0 0 24 24" fill="none"
-             xmlns="http://www.w3.org/2000/svg">
-          <rect x="2" y="2" width="20" height="20" rx="4"
-                fill="currentColor"/>
-          <path d="M12 6V18M6 12H18" stroke="white"
-                stroke-width="3" stroke-linecap="round"/>
-        </svg>
-        <span>MedTriage</span>
-      </div>
+            <div class="brand">
+                <svg viewBox="0 0 24 24" fill="none"
+                     xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="2" width="20" height="20" rx="4"
+                          fill="currentColor"/>
+                    <path d="M12 6V18M6 12H18" stroke="white"
+                          stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <span>MedTriage</span>
+            </div>
 
-      <h1 class="title">Bem-vindo ao MedTriage</h1>
-      <p class="subtitle">Entre para cuidar da sua saúde.</p>
+            <h1 class="title">Bem-vindo ao MedTriage</h1>
+            <p class="subtitle">Entre para cuidar da sua saúde.</p>
 
-      <div class="tabs-container">
-        <button class="tab-btn active" id="btn-paciente" type="button">
-          Sou paciente
-        </button>
+            <div class="tabs-container">
+                <button class="tab-btn active" id="btn-paciente" type="button">
+                    Sou paciente
+                </button>
 
-        <button class="tab-btn" id="btn-profissional" type="button">
-          Sou profissional
-        </button>
-      </div>
+                <button class="tab-btn" id="btn-profissional" type="button">
+                    Sou profissional
+                </button>
+            </div>
 
-      <form id="login-form">
+            <form id="login-form">
 
-        <div class="input-group">
-          <label for="input-id" id="label-id">CPF</label>
-          <div class="input-wrapper">
-            <input
-              type="text"
-              id="input-id"
-              placeholder="000.000.000-00"
-              required
-            >
-          </div>
+                <div class="input-group">
+                    <label for="input-id" id="label-id">CPF</label>
+                    <div class="input-wrapper">
+                        <input
+                            type="text"
+                            id="input-id"
+                            placeholder="000.000.000-00"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="senha">Senha</label>
+
+                    <div class="input-wrapper">
+                        <input
+                            type="password"
+                            id="senha"
+                            placeholder="Digite sua senha"
+                            required
+                        >
+
+                        <button type="button" class="icon-btn toggle-password">
+                            <svg width="20" height="20" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <a href="recuperar_senha.html"
+                   class="forgot-link"
+                   id="link-esqueci-senha">
+                    Esqueci minha senha
+                </a>
+
+                <!-- CAPTCHA -->
+                <div data-captcha style="display:none; margin: 16px 0;"></div>
+
+                <button type="submit" class="btn btn-primary">
+                    Entrar
+                </button>
+
+            </form>
+
+            <div class="first-time-box">
+                <p>Primeira vez aqui?</p>
+                <a href="cadastro.html" class="btn btn-outline">
+                    Criar meu acesso
+                </a>
+            </div>
+
+            <p class="help-text">
+                Precisa de ajuda? Ligue [TELEFONE]
+            </p>
+
         </div>
-
-        <div class="input-group">
-          <label for="senha">Senha</label>
-
-          <div class="input-wrapper">
-            <input
-              type="password"
-              id="senha"
-              placeholder="Digite sua senha"
-              required
-            >
-
-            <button type="button" class="icon-btn toggle-password">
-              <svg width="20" height="20" viewBox="0 0 24 24"
-                   fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <a href="recuperar_senha.html"
-           class="forgot-link"
-           id="link-esqueci-senha">
-          Esqueci minha senha
-        </a>
-
-        <button type="submit" class="btn btn-primary">
-          Entrar
-        </button>
-
-      </form>
-
-      <div class="first-time-box">
-        <p>Primeira vez aqui?</p>
-        <a href="cadastro.html" class="btn btn-outline">
-          Criar meu acesso
-        </a>
-      </div>
-
-      <p class="help-text">
-        Precisa de ajuda? Ligue [TELEFONE]
-      </p>
-
     </div>
-  </div>
 
-  <script src="js/main.js"></script>
+    <script src="js/main.js"></script>
 
 </body>
 </html>
