@@ -1,152 +1,292 @@
-// Importa funções auxiliares para buscar elementos e formatar CPF
+
 import { $, mascararCPF } from "../core/utils.js";
 
-// Importa funções de autenticação e comunicação com a API
-import { apiFetch, setToken, bootstrapSessao, parseJwt } from "../core/auth.js";
+import {
+    apiFetch,
+    setToken,
+    bootstrapSessao,
+    parseJwt
+} from "../core/auth.js";
 
-// Importa as chaves utilizadas para armazenar dados no navegador
 import { K } from "../core/config.js";
 
-// Importa funções responsáveis pelo CAPTCHA
-import { getCaptchaToken, renderCaptchaWidgets, resetCaptcha } from "../core/captcha.js";
+import {
+    getCaptchaToken,
+    renderCaptchaWidgets,
+    resetCaptcha
+} from "../core/captcha.js";
 
-// Importa a inicialização das configurações comuns
 import { initCommon } from "../core/init.js";
 
-// Inicializa as configurações comuns da página
 initCommon();
 
-// Busca o formulário de login
 const form = $("login-form");
 
 if (form) {
-  // Configura os campos de CAPTCHA
-  renderCaptchaWidgets();
 
-  // Define o perfil inicial como paciente
-  let perfil = "paciente";
+    // Elementos da página
+    const btnPac = $("btn-paciente");
+    const btnProf = $("btn-profissional");
 
-  // Busca os botões de seleção de perfil
-  const btnPac = $("btn-paciente");
-  const btnProf = $("btn-profissional");
+    const label = $("label-id");
+    const input = $("input-id");
 
-  // Busca o campo de identificação e seu rótulo
-  const label = $("label-id");
-  const input = $("input-id");
+    const senha = $("senha");
 
-  // Verifica se todos os elementos necessários existem
-  if (btnPac && btnProf && label && input) {
+    const linkCadastro = $("link-cadastro");
 
-    // Configura a seleção do perfil de paciente
-    btnPac.addEventListener("click", () => {
-      perfil = "paciente";
+    // Perfil inicial
+    let perfil = "paciente";
 
-      // Atualiza o botão selecionado
-      btnPac.classList.add("active");
-      btnProf.classList.remove("active");
+    // Inicializar CAPTCHA
+    renderCaptchaWidgets();
 
-      // Remove o tema visual profissional
-      document.body.classList.remove("theme-professional");
+    // ==============================
+    // SELECIONAR PACIENTE
+    // ==============================
 
-      // Configura o campo para receber o CPF
-      label.textContent = "CPF";
-      input.placeholder = "000.000.000-00";
-      input.value = "";
+    btnPac?.addEventListener("click", () => {
 
-      // Atualiza o link de cadastro para pacientes
-      const box = document.querySelector(".first-time-box a");
-      if (box) {
-        box.href = "cadastro.html";
-        box.textContent = "Criar meu acesso";
-      }
+        perfil = "paciente";
+
+        btnPac.classList.add("active");
+        btnProf?.classList.remove("active");
+
+        document.body.classList.remove("theme-professional");
+
+        // Configurar CPF
+        label.textContent = "CPF";
+
+        input.value = "";
+        input.placeholder = "000.000.000-00";
+        input.maxLength = 14;
+        input.inputMode = "numeric";
+
+        input.focus();
+
+        // Link de cadastro
+        if (linkCadastro) {
+
+            linkCadastro.href = "cadastro.html";
+
+            linkCadastro.textContent = "Criar meu acesso";
+        }
+
     });
 
-    // Configura a seleção do perfil profissional
-    btnProf.addEventListener("click", () => {
-      perfil = "profissional";
+    // ==============================
+    // SELECIONAR PROFISSIONAL
+    // ==============================
 
-      // Atualiza o botão selecionado
-      btnProf.classList.add("active");
-      btnPac.classList.remove("active");
+    btnProf?.addEventListener("click", () => {
 
-      // Aplica o tema visual profissional
-      document.body.classList.add("theme-professional");
+        perfil = "profissional";
 
-      // Configura o campo para receber a matrícula
-      label.textContent = "Matrícula";
-      input.placeholder = "Digite sua matrícula";
-      input.value = "";
+        btnProf.classList.add("active");
+        btnPac?.classList.remove("active");
 
-      // Atualiza o link de cadastro para médicos
-      const box = document.querySelector(".first-time-box a");
-      if (box) {
-        box.href = "cadastro_medico.html";
-        box.textContent = "Cadastrar como médico";
-      }
+        document.body.classList.add("theme-professional");
+
+        // Configurar matrícula
+        label.textContent = "Matrícula";
+
+        input.value = "";
+        input.placeholder = "Digite sua matrícula";
+        input.maxLength = 30;
+        input.inputMode = "text";
+
+        input.focus();
+
+        // Link de cadastro
+        if (linkCadastro) {
+
+            linkCadastro.href = "cadastro_medico.html";
+
+            linkCadastro.textContent = "Cadastrar como médico";
+        }
+
     });
 
-    // Aplica a formatação adequada ao campo de identificação
+    // ==============================
+    // FORMATAÇÃO DO IDENTIFICADOR
+    // ==============================
+
     input.addEventListener("input", (e) => {
 
-      // Remove caracteres especiais da matrícula e transforma em maiúsculas
-      if (perfil === "profissional") {
-        e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+        if (perfil === "profissional") {
 
-      // Aplica a máscara de CPF para pacientes
-      } else {
-        e.target.value = mascararCPF(e.target.value);
-      }
+            // Matrícula aceita letras e números
+            e.target.value = e.target.value
+                .replace(/[^a-zA-Z0-9]/g, "")
+                .toUpperCase()
+                .slice(0, 30);
+
+        } else {
+
+            // CPF aceita somente números
+            let cpf = e.target.value.replace(/\D/g, "");
+
+            // Limitar a 11 dígitos
+            cpf = cpf.slice(0, 11);
+
+            // Aplicar máscara
+            e.target.value = mascararCPF(cpf);
+
+        }
+
     });
-  }
 
-  // Processa o envio do formulário de login
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+    // ==============================
+    // ENVIAR LOGIN
+    // ==============================
 
-    // Recupera os dados informados pelo usuário
-    const id = input.value.trim();
-    const senha = $("senha").value;
+    form.addEventListener("submit", async (e) => {
 
-    // Verifica se os campos foram preenchidos
-    if (!id || !senha) return alert("Preencha todos os campos.");
+        e.preventDefault();
 
-    try {
-      // Envia os dados de login para o backend
-      const r = await apiFetch("/register/login", {
-        method: "POST",
-        body: JSON.stringify({
-          document: id,
-          senha,
-          captchaToken: getCaptchaToken()
-        }),
-      });
+        const id = input.value.trim();
 
-      // Salva o token de autenticação recebido da API
-      setToken(r.token);
+        const senhaValor = senha.value;
 
-      // Remove os dados da sessão anterior
-      localStorage.removeItem(K.sessao);
+        // Verificar campos
+        if (!id || !senhaValor) {
 
-      // Recupera as informações do token JWT
-      const claims = parseJwt(r.token);
+            alert("Preencha todos os campos.");
 
-      // Verifica se o token recebido é válido
-      if (!claims) throw new Error("Token inválido.");
+            return;
+        }
 
-      // Recupera os dados da sessão do usuário
-      await bootstrapSessao();
+        // ==============================
+        // VALIDAR CPF
+        // ==============================
 
-      // Redireciona conforme o tipo de usuário
-      window.location.href = claims.role === "CLIENTE"
-        ? "paciente_dashboard.html"
-        : "medico_dashboard.html";
+        if (perfil === "paciente") {
 
-    } catch (err) {
-      // Reinicia o CAPTCHA caso ocorra algum erro
-      resetCaptcha();
+            const cpf = id.replace(/\D/g, "");
 
-      // Exibe a mensagem de erro
-      alert(err.message);
-    }
-  });
+            if (cpf.length !== 11) {
+
+                alert("Digite um CPF com 11 números.");
+
+                input.focus();
+
+                return;
+            }
+
+        }
+
+        // ==============================
+        // VALIDAR MATRÍCULA
+        // ==============================
+
+        if (perfil === "profissional") {
+
+            if (!/^[A-Z0-9]{1,30}$/.test(id)) {
+
+                alert("Digite uma matrícula válida.");
+
+                input.focus();
+
+                return;
+            }
+
+        }
+
+        try {
+
+            // Enviar dados para o backend
+            const r = await apiFetch("/register/login", {
+
+                method: "POST",
+
+                body: JSON.stringify({
+
+                    document: perfil === "paciente"
+                        ? id.replace(/\D/g, "")
+                        : id,
+
+                    senha: senhaValor,
+
+                    captchaToken: getCaptchaToken()
+
+                })
+
+            });
+
+            // Verificar resposta
+            if (!r || !r.token) {
+
+                throw new Error(
+                    "O servidor não retornou um token de autenticação."
+                );
+
+            }
+
+            // Salvar token
+            setToken(r.token);
+
+            // Limpar sessão anterior
+            localStorage.removeItem(K.sessao);
+
+            // Interpretar JWT
+            const claims = parseJwt(r.token);
+
+            if (!claims) {
+
+                throw new Error("Token de autenticação inválido.");
+
+            }
+
+            // Identificar perfil retornado pelo backend
+            const role = String(claims.role || "").toUpperCase();
+
+            // Verificar compatibilidade do perfil
+            if (perfil === "paciente" && role !== "CLIENTE") {
+
+                throw new Error(
+                    "Este acesso não pertence a uma conta de paciente."
+                );
+
+            }
+
+            if (perfil === "profissional" && role !== "MEDICO") {
+
+                throw new Error(
+                    "Este acesso não pertence a uma conta profissional."
+                );
+
+            }
+
+            // Recuperar sessão
+            await bootstrapSessao();
+
+            // Redirecionamento
+            if (role === "CLIENTE") {
+
+                window.location.href = "paciente_dashboard.html";
+
+            } else if (role === "MEDICO") {
+
+                window.location.href = "medico_dashboard.html";
+
+            } else {
+
+                throw new Error("Tipo de usuário não reconhecido.");
+
+            }
+
+        } catch (err) {
+
+            // Reiniciar CAPTCHA
+            resetCaptcha();
+
+            alert(
+                err.message ||
+                "Não foi possível realizar o login."
+            );
+
+        }
+
+    });
+
 }

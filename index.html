@@ -4,93 +4,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Login - MedTriage</title>
+
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
     <div class="login-wrapper">
         <div class="login-card">
 
+            <!-- Identidade visual -->
             <div class="brand">
                 <svg viewBox="0 0 24 24" fill="none"
                      xmlns="http://www.w3.org/2000/svg">
+
                     <rect x="2" y="2" width="20" height="20" rx="4"
                           fill="currentColor"/>
-                    <path d="M12 6V18M6 12H18" stroke="white"
-                          stroke-width="3" stroke-linecap="round"/>
+
+                    <path d="M12 6V18M6 12H18"
+                          stroke="white"
+                          stroke-width="3"
+                          stroke-linecap="round"/>
                 </svg>
+
                 <span>MedTriage</span>
             </div>
 
             <h1 class="title">Bem-vindo ao MedTriage</h1>
-            <p class="subtitle">Entre para cuidar da sua saúde.</p>
 
+            <p class="subtitle">
+                Entre para cuidar da sua saúde.
+            </p>
+
+            <!-- Seleção de perfil -->
             <div class="tabs-container">
-                <button class="tab-btn active" id="btn-paciente" type="button">
+
+                <button
+                    class="tab-btn active"
+                    id="btn-paciente"
+                    type="button">
+
                     Sou paciente
+
                 </button>
 
-                <button class="tab-btn" id="btn-profissional" type="button">
+                <button
+                    class="tab-btn"
+                    id="btn-profissional"
+                    type="button">
+
                     Sou profissional
+
                 </button>
+
             </div>
 
+            <!-- Formulário de login -->
             <form id="login-form">
 
+                <!-- CPF ou matrícula -->
                 <div class="input-group">
-                    <label for="input-id" id="label-id">CPF</label>
+
+                    <label for="input-id" id="label-id">
+                        CPF
+                    </label>
+
                     <div class="input-wrapper">
+
                         <input
                             type="text"
                             id="input-id"
                             placeholder="000.000.000-00"
+                            maxlength="14"
+                            inputmode="numeric"
+                            autocomplete="username"
                             required
                         >
+
                     </div>
+
                 </div>
 
+                <!-- Senha -->
                 <div class="input-group">
-                    <label for="senha">Senha</label>
+
+                    <label for="senha">
+                        Senha
+                    </label>
 
                     <div class="input-wrapper">
+
                         <input
                             type="password"
                             id="senha"
                             placeholder="Digite sua senha"
+                            autocomplete="current-password"
                             required
                         >
 
-                        <button type="button" class="icon-btn toggle-password">
-                            <svg width="20" height="20" viewBox="0 0 24 24"
-                                 fill="none" stroke="currentColor" stroke-width="2">
+                        <button
+                            type="button"
+                            class="icon-btn toggle-password">
+
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2">
+
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+
                                 <circle cx="12" cy="12" r="3"/>
+
                             </svg>
+
                         </button>
+
                     </div>
+
                 </div>
 
-                <a href="recuperar_senha.html"
-                   class="forgot-link"
-                   id="link-esqueci-senha">
+                <!-- Recuperação de senha -->
+                <a
+                    href="recuperar_senha.html"
+                    class="forgot-link"
+                    id="link-esqueci-senha">
+
                     Esqueci minha senha
+
                 </a>
 
                 <!-- CAPTCHA -->
-                <div data-captcha style="display:none; margin: 16px 0;"></div>
+                <div
+                    data-captcha
+                    style="display:none; margin:16px 0;">
 
-                <button type="submit" class="btn btn-primary">
+                </div>
+
+                <!-- Entrar -->
+                <button
+                    type="submit"
+                    class="btn btn-primary">
+
                     Entrar
+
                 </button>
 
             </form>
 
+            <!-- Cadastro -->
             <div class="first-time-box">
+
                 <p>Primeira vez aqui?</p>
-                <a href="cadastro.html" class="btn btn-outline">
+
+                <a
+                    href="cadastro.html"
+                    class="btn btn-outline"
+                    id="link-cadastro">
+
                     Criar meu acesso
+
                 </a>
+
             </div>
 
             <p class="help-text">

@@ -1,167 +1,209 @@
-// Importa funções auxiliares para selecionar elementos HTML,
-// formatar datas e horários e formatar preços.
+
 import { $, fmtDataHora, fmtPreco } from "../core/utils.js";
-
-// Importa as constantes de armazenamento e os rótulos das especialidades médicas.
 import { K, ESP_LABEL } from "../core/config.js";
-
-// Importa as funções responsáveis por verificar o login e realizar requisições à API.
 import { requireLogin, apiFetch } from "../core/auth.js";
-
-// Importa a função que preenche a saudação do usuário.
 import { preencherGreeting } from "../core/ui.js";
-
-// Importa a inicialização dos recursos comuns das páginas.
 import { initCommon } from "../core/init.js";
 
-// Inicializa os recursos compartilhados do sistema.
+// Inicializa os recursos compartilhados.
 initCommon();
 
-// Executa uma função assíncrona para carregar e confirmar o agendamento.
 (async () => {
-  // Verifica se o botão de confirmação existe na página.
-  if (!$("btn-confirmar")) return;
+  // Verifica se o botão de confirmação existe.
+  const botaoConfirmar = $("btn-confirmar");
+  if (!botaoConfirmar) return;
 
-  // Verifica se o usuário está autenticado e recupera os dados da sessão.
+  // Verifica a autenticação.
   const s = await requireLogin();
-
-  // Interrompe a execução caso não exista uma sessão válida.
   if (!s) return;
 
-  // Preenche a saudação de boas-vindas do usuário.
-  preencherGreeting();
-
-  // Recupera os dados temporários do agendamento armazenados no navegador.
-  // Caso não existam dados, utiliza null.
-  const ag = JSON.parse(localStorage.getItem(K.agendTemp) || "null");
-
-  // Verifica se existe um agendamento em andamento.
-  if (!ag) {
-    // Informa que nenhum agendamento foi encontrado.
-    alert("Nenhum agendamento.");
-
-    // Redireciona o usuário para a página de busca de especialistas.
-    window.location.href = "buscar_especialista.html";
-
-    // Encerra a execução.
+  // Esta etapa é exclusiva para pacientes.
+  if (s.role !== "CLIENTE") {
+    window.location.replace("index.html");
     return;
   }
 
-  // Exibe o nome do paciente na revisão do agendamento.
-  // Caso o nome não esteja disponível, exibe um traço.
-  $("revisao-paciente").textContent = s.nome || "-";
+  // Preenche a saudação.
+  preencherGreeting();
 
-  // Exibe o serviço selecionado com o nome da especialidade médica.
-  $("revisao-servico").textContent = `Consulta de ${ESP_LABEL[ag.especialidade] || ag.especialidade}`;
+  // Recupera os dados temporários do agendamento.
+  let ag;
 
-  // Exibe o nome do médico selecionado.
-  $("revisao-medico").textContent = ag.medicoNome;
+  try {
+    ag = JSON.parse(localStorage.getItem(K.agendTemp) || "null");
+  } catch (erro) {
+    console.error("Erro ao recuperar o agendamento:", erro);
+    ag = null;
+  }
 
-  // Exibe o CRM do médico.
-  // Caso não esteja disponível, exibe um traço.
-  $("revisao-crm").textContent = ag.crm || "-";
+  // Verifica se existe um agendamento em andamento.
+  if (!ag) {
+    alert("Nenhum agendamento em andamento.");
+    window.location.href = "buscar_especialista.html";
+    return;
+  }
 
-  // Informa que o atendimento será presencial.
-  $("revisao-tipo").textContent = "Presencial";
+  // Recupera o CPF do paciente.
+  const cpf = String(
+    s.cpf ||
+    s.pacienteCpf ||
+    localStorage.getItem(K.pacienteCpf) ||
+    ""
+  ).replace(/\D/g, "");
 
-  // Exibe a data e o horário escolhidos para a consulta.
-  $("revisao-horario").textContent = fmtDataHora(ag.data_hora);
+  // Recupera o ID do paciente, quando disponível.
+  const pacienteId =
+    Number(localStorage.getItem(K.pacienteId)) ||
+    Number(s.pacienteId) ||
+    null;
 
-  // Exibe o endereço do local de atendimento.
-  $("revisao-endereco").textContent = "Consultório do médico";
+  // Valida os dados essenciais.
+  if (cpf.length !== 11) {
+    alert("Não foi possível identificar o CPF do paciente. Entre novamente na sua conta.");
+    return;
+  }
 
-  // Informa que o pagamento será particular.
-  $("revisao-convenio").textContent = "Particular";
+  if (!ag.crm || !ag.especialidade || !ag.data_hora) {
+    alert("Os dados do agendamento estão incompletos. Selecione novamente o médico e o horário.");
+    window.location.href = "buscar_especialista.html";
+    return;
+  }
 
-  // Exibe para quem a consulta está sendo agendada.
-  // Caso não exista essa informação, utiliza "Para mim".
-  $("revisao-para-quem").textContent = ag.paraQuem || "Para mim";
+  // Preenche um elemento da revisão, caso ele exista.
+  function preencher(id, valor) {
+    const elemento = $(id);
+    if (elemento) {
+      elemento.textContent = valor ?? "-";
+    }
+  }
 
-  // Exibe o preço da consulta no formato monetário definido pelo sistema.
-  $("revisao-valor").textContent = fmtPreco(ag.preco);
+  // Preenche os dados da revisão.
+  preencher("revisao-paciente", s.nome || "-");
 
-  // Recupera os elementos responsáveis pela exibição do motivo da consulta.
-  const mEl = $("revisao-motivo");
-  const mCont = $("revisao-motivo-container");
+  preencher(
+    "revisao-servico",
+    `Consulta de ${ESP_LABEL[ag.especialidade] || ag.especialidade}`
+  );
 
-  // Verifica se o usuário informou o motivo da consulta.
+  preencher("revisao-medico", ag.medicoNome || "Médico não informado");
+  preencher("revisao-crm", ag.crm);
+  preencher("revisao-tipo", "Presencial");
+  preencher("revisao-horario", fmtDataHora(ag.data_hora));
+  preencher("revisao-endereco", "Consultório do médico");
+  preencher("revisao-convenio", "Particular");
+  preencher("revisao-para-quem", ag.paraQuem || "Para mim");
+  preencher("revisao-valor", fmtPreco(ag.preco));
+
+  // Exibe ou oculta o motivo da consulta.
+  const motivoElemento = $("revisao-motivo");
+  const motivoContainer = $("revisao-motivo-container");
+
   if (ag.motivo) {
-    // Exibe o motivo informado pelo paciente.
-    if (mEl) mEl.textContent = ag.motivo;
-  }
-  // Caso não exista motivo, oculta o campo correspondente.
-  else if (mCont) {
-    mCont.style.display = "none";
-  }
-
-  // Recupera os elementos responsáveis pela exibição da condição de saúde.
-  const cEl = $("revisao-condicao");
-  const cCont = $("revisao-condicao-container");
-
-  // Verifica se os elementos de condição de saúde existem na página.
-  if (cEl && cCont) {
-    // Verifica se o paciente informou alguma condição de saúde.
-    if (ag.condicao) {
-      // Exibe a condição de saúde informada.
-      cEl.textContent = ag.condicao;
+    if (motivoElemento) {
+      motivoElemento.textContent = ag.motivo;
     }
-    // Caso não exista informação, oculta o campo correspondente.
-    else {
-      cCont.style.display = "none";
-    }
+  } else if (motivoContainer) {
+    motivoContainer.style.display = "none";
   }
 
-  // Configura a ação executada quando o paciente clicar em confirmar.
-  // A função é assíncrona porque realiza uma requisição à API.
-  $("btn-confirmar").onclick = async () => {
-    // Recupera o ID do paciente armazenado no navegador.
-    const pid = Number(localStorage.getItem(K.pacienteId));
+  // Exibe ou oculta a condição de saúde.
+  const condicaoElemento = $("revisao-condicao");
+  const condicaoContainer = $("revisao-condicao-container");
 
-    // Tenta enviar os dados do agendamento para o backend.
+  if (ag.condicao) {
+    if (condicaoElemento) {
+      condicaoElemento.textContent = ag.condicao;
+    }
+  } else if (condicaoContainer) {
+    condicaoContainer.style.display = "none";
+  }
+
+  // Evita o envio de vários agendamentos pelo mesmo clique.
+  let enviando = false;
+
+  // Configura o botão de confirmação.
+  botaoConfirmar.onclick = async () => {
+    if (enviando) return;
+
+    // Verifica novamente os dados essenciais.
+    if (!cpf || cpf.length !== 11) {
+      alert("CPF do paciente inválido.");
+      return;
+    }
+
+    if (!ag.crm || !ag.especialidade || !ag.data_hora) {
+      alert("Existem informações ausentes no agendamento.");
+      return;
+    }
+
+    enviando = true;
+    botaoConfirmar.disabled = true;
+    botaoConfirmar.textContent = "Confirmando...";
+
     try {
-      // Envia uma requisição POST para criar uma nova consulta.
+      // Monta os dados enviados ao backend.
+      const dadosConsulta = {
+        especialidadeConsulta: ag.especialidade,
+
+        // CRM do médico responsável.
+        medico: ag.crm,
+
+        // ID do paciente, quando disponível.
+        paciente: pacienteId,
+
+        // CPF utilizado para identificar o paciente.
+        pacienteCpf: cpf,
+
+        // Data e horário selecionados.
+        data_hora: ag.data_hora,
+
+        // Tipo de atendimento aceito pelo backend.
+        tipoConsulta: "PRESENCIAL",
+
+        // Condição de saúde informada.
+        condicaoSaude: ag.condicao?.trim() || null,
+
+        // Motivo da consulta.
+        motivo: ag.motivo?.trim() || null
+      };
+
+      // Envia o agendamento para a API.
       const criada = await apiFetch("/consulta", {
-        // Define o método HTTP utilizado na requisição.
         method: "POST",
-
-        // Converte os dados do agendamento para o formato JSON.
-        body: JSON.stringify({
-          // Envia a especialidade médica selecionada.
-          especialidadeConsulta: ag.especialidade,
-
-          // Envia o CRM do médico responsável pela consulta.
-          medico: ag.crm,
-
-          // Envia o ID do paciente que está realizando o agendamento.
-          paciente: pid,
-
-          // Envia a data e o horário escolhidos.
-          data_hora: ag.data_hora,
-
-          // Define o tipo de atendimento como presencial.
-          tipo: "PRESENCIAL",
-
-          // Envia a condição de saúde informada.
-          // Caso não tenha sido preenchida, envia null.
-          condicaoSaude: ag.condicao || null,
-
-          // Envia o motivo da consulta informado.
-          // Caso não tenha sido preenchido, envia null.
-          motivo: ag.motivo || null,
-        }),
+        body: JSON.stringify(dadosConsulta)
       });
 
-      // Armazena o ID da consulta recém-criada no navegador.
-      localStorage.setItem(K.consultaNova, String(criada.id));
+      // Confere se a API retornou o ID da consulta.
+      if (!criada || !criada.id) {
+        throw new Error(
+          "A API não confirmou a criação da consulta. Verifique o backend."
+        );
+      }
 
-      // Remove os dados temporários do agendamento após a confirmação.
+      // Salva o ID da consulta criada.
+      localStorage.setItem(
+        K.consultaNova,
+        String(criada.id)
+      );
+
+      // Remove os dados temporários após o sucesso.
       localStorage.removeItem(K.agendTemp);
 
-      // Redireciona o paciente para a página de confirmação de sucesso.
+      // Redireciona para a confirmação.
       window.location.href = "agendamento_sucesso.html";
-    } catch (err) {
-      // Exibe uma mensagem informando o erro ocorrido durante o agendamento.
-      alert(err.message);
+
+    } catch (erro) {
+      console.error("Erro ao confirmar agendamento:", erro);
+
+      alert(
+        erro.message ||
+        "Não foi possível realizar o agendamento. Tente novamente."
+      );
+
+      // Permite tentar novamente.
+      enviando = false;
+      botaoConfirmar.disabled = false;
+      botaoConfirmar.textContent = "Confirmar agendamento";
     }
   };
 })();

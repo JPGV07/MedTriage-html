@@ -1,93 +1,189 @@
-// Importa funções auxiliares para selecionar elementos e formatar datas e horários.
+
 import { $, fmtDataHora } from "../core/utils.js";
-
-// Importa as configurações e os rótulos das especialidades médicas.
 import { K, ESP_LABEL } from "../core/config.js";
-
-// Importa as funções responsáveis pela autenticação e pelas requisições à API.
 import { requireLogin, apiFetch } from "../core/auth.js";
-
-// Importa a função que preenche a saudação do usuário na página.
 import { preencherGreeting } from "../core/ui.js";
-
-// Importa a inicialização dos recursos comuns das páginas.
 import { initCommon } from "../core/init.js";
 
-// Inicializa os recursos compartilhados do sistema.
+// Inicializa os recursos compartilhados.
 initCommon();
 
-// Executa o carregamento e a exibição dos laudos médicos.
 (async () => {
-  // Verifica se o elemento principal da lista de laudos existe na página.
-  if (!$("lista-laudos")) return;
+  // Recupera o container principal da lista de laudos.
+  let lista =
+    $("lista-laudos") ||
+    document.querySelector(".laudos-lista");
 
-  // Verifica se o usuário está autenticado.
+  // Verifica se existe algum container adequado na página.
+  const containerPrincipal =
+    document.querySelector(".dashboard-main");
+
+  if (!lista && !containerPrincipal) return;
+
+  // Verifica a autenticação.
   const s = await requireLogin();
   if (!s) return;
 
-  // Permite o acesso somente aos usuários com perfil de cliente.
-  if (s.role !== "CLIENTE") { window.location.replace("index.html"); return; }
-
-  // Preenche a saudação com as informações do usuário.
-  preencherGreeting();
-
-  // Recupera o ID do paciente armazenado localmente.
-  const pid = Number(localStorage.getItem(K.pacienteId));
-
-  // Busca na API todas as consultas vinculadas ao paciente.
-  const consultas = await apiFetch(`/consulta/paciente/${pid}`);
-
-  // Filtra apenas as consultas concluídas que possuem um laudo preenchido.
-  const comLaudo = consultas.filter(c =>
-    c.status === "CONCLUIDA" && c.laudo && c.laudo.trim()
-  );
-
-  // Recupera o elemento responsável por exibir a mensagem de lista vazia.
-  const vazio = $("laudos-vazio");
-
-  // Recupera o elemento onde os laudos médicos serão exibidos.
-  const lista = $("lista-laudos");
-
-  // Verifica se o paciente não possui consultas concluídas com laudos.
-  if (comLaudo.length === 0) {
-    // Oculta a lista de laudos.
-    lista.style.display = "none";
-
-    // Exibe a mensagem informando que não existem laudos disponíveis.
-    if (vazio) vazio.style.display = "block";
+  // Permite acesso somente aos pacientes.
+  if (s.role !== "CLIENTE") {
+    window.location.replace("index.html");
     return;
   }
 
-  // Exibe a lista quando existem laudos disponíveis.
+  // Preenche a saudação.
+  preencherGreeting();
+
+  // Recupera o CPF do paciente.
+  const cpf = String(
+    s.cpf ||
+    s.pacienteCpf ||
+    localStorage.getItem(K.pacienteCpf) ||
+    ""
+  ).replace(/\D/g, "");
+
+  // Valida o CPF.
+  if (cpf.length !== 11) {
+    alert("Não foi possível identificar seu CPF. Entre novamente na sua conta.");
+    window.location.replace("index.html");
+    return;
+  }
+
+  // Cria o container da lista caso ele ainda não exista.
+  if (!lista) {
+    lista = document.createElement("div");
+    lista.id = "lista-laudos";
+    lista.className = "laudos-lista";
+    containerPrincipal.appendChild(lista);
+  }
+
+  // Recupera o elemento de mensagem de lista vazia.
+  const vazio =
+    $("laudos-vazio") ||
+    document.querySelector(".laudos-vazio");
+
+  // Busca os laudos no backend.
+  let consultas;
+
+  try {
+    const resposta = await apiFetch(
+      `/consulta/paciente/${encodeURIComponent(cpf)}`
+    );
+
+    if (!Array.isArray(resposta)) {
+      throw new Error("A API retornou um formato de consultas inválido.");
+    }
+
+    consultas = resposta;
+
+  } catch (erro) {
+    console.error("Erro ao carregar laudos:", erro);
+
+    lista.style.display = "none";
+
+    if (vazio) {
+      vazio.style.display = "block";
+      vazio.textContent =
+        "Não foi possível carregar seus laudos. Tente novamente.";
+    } else {
+      alert(
+        erro.message ||
+        "Não foi possível carregar seus laudos."
+      );
+    }
+
+    return;
+  }
+
+  // Mantém somente consultas concluídas que possuem laudo.
+  const comLaudo = consultas.filter(consulta =>
+    consulta.status === "CONCLUIDA" &&
+    typeof consulta.laudo === "string" &&
+    consulta.laudo.trim().length > 0
+  );
+
+  // Se não houver laudos, apresenta a mensagem correspondente.
+  if (comLaudo.length === 0) {
+    lista.innerHTML = "";
+    lista.style.display = "none";
+
+    if (vazio) {
+      vazio.style.display = "block";
+      vazio.textContent = "Você ainda não possui laudos disponíveis.";
+    }
+
+    return;
+  }
+
+  // Exibe a lista e oculta a mensagem de ausência de laudos.
   lista.style.display = "block";
 
-  // Oculta a mensagem de lista vazia.
-  if (vazio) vazio.style.display = "none";
+  if (vazio) {
+    vazio.style.display = "none";
+  }
 
-  // Limpa o conteúdo anterior da lista de laudos.
+  // Limpa os cartões anteriores.
   lista.innerHTML = "";
 
-  // Percorre todas as consultas que possuem laudos para criar seus cartões.
-  comLaudo.forEach(c => {
-    // Cria um elemento HTML para representar o cartão do laudo.
-    const card = document.createElement("div");
+  // Recupera o nome do médico considerando diferentes estruturas da API.
+  function obterNomeMedico(consulta) {
+    return (
+      consulta.medico?.funcionario?.usuario?.nome ||
+      consulta.medico?.funcionario?.nome ||
+      consulta.medico?.nome ||
+      "Médico não informado"
+    );
+  }
 
-    // Define a classe CSS responsável pela aparência do cartão.
+  // Cria os cartões de laudo.
+  comLaudo.forEach(consulta => {
+    const card = document.createElement("div");
     card.className = "laudo-card";
 
-    // Insere no cartão as informações da consulta e o conteúdo do laudo.
-    card.innerHTML = `
-      <div class="laudo-header">
-        <div>
-          <h3>${ESP_LABEL[c.especialidade] || c.especialidade}</h3>
-          <p class="laudo-medico">${c.medico.funcionario.nome} • ${c.medico.crm}</p>
-        </div>
-        <p class="laudo-data">${fmtDataHora(c.dia_hora)}</p>
-      </div>
-      <div class="laudo-conteudo">${c.laudo}</div>
-    `;
+    // Cabeçalho do laudo.
+    const header = document.createElement("div");
+    header.className = "laudo-header";
 
-    // Adiciona o cartão criado à lista de laudos da página.
+    const informacoes = document.createElement("div");
+
+    const titulo = document.createElement("h3");
+    titulo.textContent =
+      `${ESP_LABEL[consulta.especialidade] ||
+        consulta.especialidade ||
+        "Especialidade não informada"} · Presencial`;
+
+    const medico = document.createElement("p");
+    medico.className = "laudo-medico";
+
+    medico.textContent =
+      `Médico: ${obterNomeMedico(consulta)} ` +
+      `(CRM: ${consulta.medico?.crm || "-"})`;
+
+    const data = document.createElement("span");
+    data.className = "laudo-data";
+    data.textContent = fmtDataHora(consulta.dia_hora);
+
+    informacoes.appendChild(titulo);
+    informacoes.appendChild(medico);
+
+    header.appendChild(informacoes);
+    header.appendChild(data);
+
+    // Conteúdo do laudo.
+    const conteudo = document.createElement("div");
+    conteudo.className = "laudo-conteudo";
+
+    // textContent impede que o conteúdo do laudo seja interpretado como HTML.
+    conteudo.textContent = consulta.laudo;
+
+    // Preserva quebras de linha do texto do laudo.
+    conteudo.style.whiteSpace = "pre-wrap";
+
+    // Monta o cartão.
+    card.appendChild(header);
+    card.appendChild(conteudo);
+
+    // Adiciona o cartão à página.
     lista.appendChild(card);
   });
+
 })();

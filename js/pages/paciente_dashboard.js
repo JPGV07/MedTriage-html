@@ -1,154 +1,228 @@
-// Importa funções auxiliares para selecionar elementos HTML e formatar datas.
+
 import { $, fmtDataHora } from "../core/utils.js";
-
-// Importa as constantes de armazenamento, especialidades e status das consultas.
 import { K, ESP_LABEL, STATUS_LABEL } from "../core/config.js";
-
-// Importa as funções responsáveis por verificar o login e realizar requisições à API.
 import { requireLogin, apiFetch } from "../core/auth.js";
-
-// Importa a função que preenche a saudação do usuário.
 import { preencherGreeting } from "../core/ui.js";
-
-// Importa a inicialização dos recursos comuns das páginas.
 import { initCommon } from "../core/init.js";
 
-// Inicializa os recursos compartilhados do sistema.
+// Inicializa os recursos compartilhados da página.
 initCommon();
 
-// Executa uma função assíncrona para carregar as consultas do paciente.
 (async () => {
-  // Verifica se os elementos necessários do dashboard existem na página.
+  // Verifica se os elementos principais do dashboard existem.
   if (!$("card-sem-consulta") || !$("welcome-title")) return;
 
-  // Verifica se o usuário está autenticado e recupera os dados da sessão.
+  // Verifica a autenticação do usuário.
   const s = await requireLogin();
-
-  // Interrompe a execução caso não exista uma sessão válida.
   if (!s) return;
 
-  // Verifica se o usuário possui o perfil de cliente.
-  // Caso contrário, redireciona para a página inicial.
-  if (s.role !== "CLIENTE") { window.location.replace("index.html"); return; }
+  // Esta página é exclusiva para pacientes.
+  if (s.role !== "CLIENTE") {
+    window.location.replace("index.html");
+    return;
+  }
 
-  // Preenche a saudação de boas-vindas do paciente.
+  // Preenche a saudação do paciente.
   preencherGreeting();
 
-  // Recupera o ID do paciente armazenado no navegador.
-  const pid = Number(localStorage.getItem(K.pacienteId));
+  // Recupera o CPF da sessão ou do armazenamento local.
+  const cpf = String(
+    s.cpf ||
+    s.pacienteCpf ||
+    localStorage.getItem(K.pacienteCpf) ||
+    ""
+  ).replace(/\D/g, "");
 
-  // Verifica se o ID do paciente é válido.
-  // Caso não seja, redireciona para a página inicial.
-  if (!pid) { window.location.replace("index.html"); return; }
+  // O CPF precisa conter exatamente 11 dígitos.
+  if (cpf.length !== 11) {
+    console.error("CPF do paciente ausente ou inválido.");
+    window.location.replace("index.html");
+    return;
+  }
 
-  // Busca na API todas as consultas vinculadas ao paciente.
-  const consultas = await apiFetch(`/consulta/paciente/${pid}`);
-
-  // Filtra as consultas, mantendo apenas aquelas que não foram canceladas.
-  const ativas = consultas.filter(c => c.status !== "CANCELADA");
-
-  // Recupera os elementos HTML utilizados para exibir as consultas.
+  // Recupera os elementos utilizados na exibição das consultas.
   const cardCom = $("card-com-consulta");
   const cardSem = $("card-sem-consulta");
   const multi = $("multiplas-consultas");
   const lista = $("lista-consultas-dashboard");
 
-  // Verifica se o paciente não possui consultas ativas.
-  if (ativas.length === 0) {
-    // Oculta o cartão de consulta existente.
+  // Consulta as informações do paciente no backend.
+  let consultas;
+
+  try {
+    const resposta = await apiFetch(
+      `/consulta/paciente/${encodeURIComponent(cpf)}`
+    );
+
+    if (!Array.isArray(resposta)) {
+      throw new Error("A API não retornou uma lista de consultas.");
+    }
+
+    consultas = resposta;
+
+  } catch (erro) {
+    console.error("Erro ao carregar consultas:", erro);
+
+    // Não apresenta uma falha de comunicação como ausência de consultas.
     if (cardCom) cardCom.style.display = "none";
-
-    // Oculta a área de múltiplas consultas.
     if (multi) multi.style.display = "none";
 
-    // Exibe o cartão informando que não existem consultas.
-    if (cardSem) cardSem.style.display = "flex";
+    if (cardSem) {
+      cardSem.style.display = "flex";
+      cardSem.textContent = "Não foi possível carregar suas consultas. Tente novamente.";
+    }
 
-    // Encerra a execução, pois não há consultas para exibir.
     return;
   }
 
-  // Verifica se o paciente possui exatamente uma consulta ativa.
+  // Remove as consultas canceladas.
+  const ativas = consultas.filter(
+    consulta => consulta.status !== "CANCELADA"
+  );
+
+  // Recupera o nome do médico considerando diferentes estruturas da API.
+  function obterNomeMedico(consulta) {
+    return (
+      consulta.medico?.funcionario?.usuario?.nome ||
+      consulta.medico?.funcionario?.nome ||
+      consulta.medico?.nome ||
+      consulta.medico?.crm ||
+      "Médico não informado"
+    );
+  }
+
+  // Recupera a descrição da especialidade.
+  function obterEspecialidade(consulta) {
+    return (
+      ESP_LABEL[consulta.especialidade] ||
+      consulta.especialidade ||
+      "Especialidade não informada"
+    );
+  }
+
+  // Recupera a descrição do status.
+  function obterStatus(consulta) {
+    return (
+      STATUS_LABEL[consulta.status] ||
+      consulta.status ||
+      "Status não informado"
+    );
+  }
+
+  // Abre a página de detalhes de uma consulta.
+  function abrirDetalhes(consulta) {
+    if (!consulta.id) {
+      console.error("Consulta sem ID:", consulta);
+      return;
+    }
+
+    localStorage.setItem(K.consultaSel, consulta.id);
+
+    window.location.href = "detalhes_consulta.html";
+  }
+
+  // Se não houver consultas ativas, apresenta o cartão correspondente.
+  if (ativas.length === 0) {
+    if (cardCom) cardCom.style.display = "none";
+    if (multi) multi.style.display = "none";
+
+    if (cardSem) {
+      cardSem.style.display = "flex";
+    }
+
+    return;
+  }
+
+  // Se existir somente uma consulta ativa, apresenta o cartão individual.
   if (ativas.length === 1) {
-    // Oculta o cartão de ausência de consultas.
     if (cardSem) cardSem.style.display = "none";
-
-    // Oculta a área destinada à listagem de várias consultas.
     if (multi) multi.style.display = "none";
 
-    // Exibe o cartão da consulta única.
-    if (cardCom) cardCom.style.display = "flex";
+    if (cardCom) {
+      cardCom.style.display = "flex";
+    }
 
-    // Recupera os dados da única consulta ativa.
-    const c = ativas[0];
+    const consulta = ativas[0];
 
-    // Exibe a data e o horário da consulta formatados.
-    $("appointment-date").textContent = fmtDataHora(c.dia_hora);
+    const data = $("appointment-date");
+    const medico = $("appointment-doctor");
+    const local = $("appointment-location");
+    const botao = $("btn-ver-detalhes");
 
-    // Exibe o nome do médico e a especialidade da consulta.
-    // Utiliza o rótulo da especialidade quando estiver disponível.
-    $("appointment-doctor").textContent =
-      `${c.medico.funcionario.nome} · ${ESP_LABEL[c.especialidade] || c.especialidade}`;
+    if (data) {
+      data.textContent = fmtDataHora(consulta.dia_hora);
+    }
 
-    // Informa que a consulta será realizada presencialmente.
-    $("appointment-location").textContent = "Consulta presencial";
+    if (medico) {
+      medico.textContent =
+        `${obterNomeMedico(consulta)} · ${obterEspecialidade(consulta)}`;
+    }
 
-    // Configura o botão para abrir os detalhes da consulta.
-    $("btn-ver-detalhes").onclick = () => {
-      // Armazena o ID da consulta selecionada no navegador.
-      localStorage.setItem(K.consultaSel, c.id);
+    if (local) {
+      local.textContent = "Consulta presencial";
+    }
 
-      // Redireciona o paciente para a página de detalhes da consulta.
-      window.location.href = "detalhes_consulta.html";
-    };
+    if (botao) {
+      botao.onclick = () => abrirDetalhes(consulta);
+    }
 
-    // Encerra a execução após exibir a consulta única.
     return;
   }
 
-  // Caso existam várias consultas, oculta os cartões de consulta única e ausência.
+  // Se houver várias consultas, apresenta a listagem.
   if (cardCom) cardCom.style.display = "none";
   if (cardSem) cardSem.style.display = "none";
 
-  // Verifica se a área de múltiplas consultas existe na página.
-  if (!multi) return;
+  if (!multi || !lista) {
+    console.error("Elementos da lista de consultas não encontrados.");
+    return;
+  }
 
-  // Exibe a área destinada à listagem de várias consultas.
   multi.style.display = "block";
-
-  // Limpa a lista antes de adicionar as consultas recuperadas da API.
   lista.innerHTML = "";
 
-  // Percorre todas as consultas ativas para criar seus cartões.
-  ativas.forEach(c => {
-    // Cria um novo elemento HTML para representar uma consulta.
+  // Cria um cartão para cada consulta ativa.
+  ativas.forEach(consulta => {
     const div = document.createElement("div");
-
-    // Define a classe CSS responsável pela aparência do cartão.
     div.className = "consulta-item-card";
 
-    // Insere no cartão o nome do médico, a especialidade,
-    // a data, o horário e o status da consulta.
-    // Também cria o botão para gerenciar a consulta.
-    div.innerHTML = `
-      <div class="consulta-item-info">
-        <h3>${c.medico.funcionario.nome} · ${ESP_LABEL[c.especialidade] || c.especialidade}</h3>
-        <p><strong>${fmtDataHora(c.dia_hora)}</strong></p>
-        <p>Status: ${STATUS_LABEL[c.status]}</p>
-      </div>
-      <button class="btn btn-primary" style="width: auto;">Gerenciar</button>
-    `;
+    const info = document.createElement("div");
+    info.className = "consulta-item-info";
 
-    // Configura o botão Gerenciar para abrir os detalhes da consulta.
-    div.querySelector("button").onclick = () => {
-      // Armazena o ID da consulta selecionada no navegador.
-      localStorage.setItem(K.consultaSel, c.id);
+    const titulo = document.createElement("h3");
+    titulo.textContent =
+      `${obterNomeMedico(consulta)} · ${obterEspecialidade(consulta)}`;
 
-      // Redireciona o paciente para a página de detalhes da consulta.
-      window.location.href = "detalhes_consulta.html";
-    };
+    const data = document.createElement("p");
+    const dataStrong = document.createElement("strong");
 
-    // Adiciona o cartão criado à lista de consultas do dashboard.
+    dataStrong.textContent = fmtDataHora(consulta.dia_hora);
+    data.appendChild(dataStrong);
+
+    const modalidade = document.createElement("span");
+    modalidade.textContent = " · Presencial";
+    data.appendChild(modalidade);
+
+    const status = document.createElement("p");
+    status.textContent = `Status: ${obterStatus(consulta)}`;
+
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "btn btn-primary";
+    botao.style.width = "auto";
+    botao.textContent = "Gerenciar";
+
+    botao.addEventListener("click", () => {
+      abrirDetalhes(consulta);
+    });
+
+    info.appendChild(titulo);
+    info.appendChild(data);
+    info.appendChild(status);
+
+    div.appendChild(info);
+    div.appendChild(botao);
+
     lista.appendChild(div);
   });
 })();

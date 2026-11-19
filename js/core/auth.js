@@ -1,174 +1,442 @@
-// Importa as configurações da API e as chaves de armazenamento
+
 import { CONFIG, K } from "./config.js";
 
-// Recupera o token de autenticação armazenado no navegador
+// =====================================================
+// TOKEN DE AUTENTICAÇÃO
+// =====================================================
+
+// Recupera o token armazenado.
 export const getToken = () => localStorage.getItem(K.token);
 
-// Salva o token de autenticação no navegador
-export const setToken = (t) => localStorage.setItem(K.token, t);
-
-// Remove os dados de autenticação e da sessão do usuário
-export function clearAuth() {
-  [K.token, K.sessao, K.pacienteId, K.medicoCrm].forEach(k => localStorage.removeItem(k));
-}
-
-// Recupera os dados da sessão do usuário
-export function getSessao() {
-  try { 
-    return JSON.parse(localStorage.getItem(K.sessao) || "null"); 
-  }
-  catch { 
-    return null; 
-  }
-}
-
-// Salva os dados da sessão no navegador
-export function setSessao(s) {
-  localStorage.setItem(K.sessao, JSON.stringify(s));
-}
-
-// Decodifica as informações armazenadas no token JWT
-export function parseJwt(t) {
-  try {
-    const p = t.split(".")[1];
-    return JSON.parse(atob(p.replace(/-/g, "+").replace(/_/g, "/")));
-  } catch { 
-    return null; 
-  }
-}
-
-// Realiza requisições para o backend da API
-export async function apiFetch(path, opts = {}) {
-  // Define o tipo de conteúdo enviado nas requisições
-  const headers = { "Content-Type": "application/json" };
-
-  // Recupera o token de autenticação
-  const tk = getToken();
-
-  // Adiciona o token ao cabeçalho da requisição
-  if (tk) headers["Authorization"] = "Bearer " + tk;
-
-  // Adiciona outros cabeçalhos, caso existam
-  Object.assign(headers, opts.headers || {});
-
-  // Envia a requisição para o backend
-  const res = await fetch(CONFIG.API_BASE + path, { ...opts, headers });
-
-  // Verifica se a sessão expirou ou se o usuário não está autenticado
-  if (res.status === 401) {
-    clearAuth();
-
-    // Verifica qual página está aberta
-    const atual = window.location.pathname.split("/").pop();
-
-    // Redireciona para a página inicial
-    if (atual !== "index.html" && atual !== "") window.location.href = "index.html";
-
-    throw new Error("Sessão expirada. Faça login novamente.");
-  }
-
-  // Verifica se a requisição retornou algum erro
-  if (!res.ok) {
-    let msg = `Erro ${res.status}`;
-
-    // Tenta recuperar a mensagem de erro enviada pela API
-    try {
-      const j = await res.json();
-      msg = j.response || j.message || j.error || msg;
-    } catch { /* corpo vazio */ }
-
-    throw new Error(msg);
-  }
-
-  // Retorna vazio quando a API responde com status 204
-  if (res.status === 204) return null;
-
-  // Recupera o conteúdo da resposta
-  const text = await res.text();
-
-  // Verifica se a resposta está vazia
-  if (!text) return null;
-
-  // Tenta converter a resposta para JSON
-  try { 
-    return JSON.parse(text); 
-  }
-  catch { 
-    return text; 
-  }
-}
-
-// Recupera os dados do usuário para restaurar sua sessão
-export async function bootstrapSessao() {
-  // Verifica se existe um token de autenticação
-  if (!getToken()) return null;
-
-  // Recupera a sessão já armazenada
-  const atual = getSessao();
-
-  // Retorna a sessão se ela já possuir um ID
-  if (atual && atual.id) return atual;
-
-  // Decodifica as informações do token
-  const claims = parseJwt(getToken());
-  if (!claims) return null;
-
-  // Recupera o tipo de usuário e seu identificador
-  const role = claims.role;
-  const sub = claims.sub;
-
-  try {
-    // Verifica se o usuário é um paciente
-    if (role === "CLIENTE") {
-      // Busca os dados do paciente no backend
-      const p = await apiFetch(`/pac/usuario/${encodeURIComponent(sub)}`);
-
-      // Armazena o ID do paciente
-      localStorage.setItem(K.pacienteId, String(p.id));
-
-      // Monta os dados da sessão do paciente
-      const s = { id: sub, nome: p.nome || "Paciente", role, pacienteId: p.id };
-
-      // Salva e retorna a sessão
-      setSessao(s);
-      return s;
+// Salva o token.
+export const setToken = (t) => {
+    if (!t) {
+        localStorage.removeItem(K.token);
+        return;
     }
 
-    // Busca os dados do funcionário ou médico no backend
-    const m = await apiFetch(`/med/funcionario/${encodeURIComponent(sub)}`);
+    localStorage.setItem(K.token, t);
+};
 
-    // Armazena o CRM do médico
-    localStorage.setItem(K.medicoCrm, m.crm);
+// =====================================================
+// LIMPAR AUTENTICAÇÃO
+// =====================================================
 
-    // Monta os dados da sessão do funcionário
-    const s = {
-      id: sub,
-      nome: (m.funcionario && m.funcionario.nome) || m.crm,
-      role,
-      crm: m.crm,
-    };
+export function clearAuth() {
 
-    // Salva e retorna a sessão
-    setSessao(s);
-    return s;
+    [
+        K.token,
+        K.sessao,
+        K.pacienteId,
+        K.pacienteCpf,
+        K.medicoCrm,
+        K.agendTemp,
+        K.consultaSel,
+        K.consultaReag,
+        K.consultaCanc,
+        K.consultaAtend,
+        K.consultaNova,
+        K.medicoSel,
+        K.historicoPac,
+        "medtriage_token",
+        "medtriage_user"
+    ].forEach(k => localStorage.removeItem(k));
 
-  } catch {
-    // Cria uma sessão incompleta caso não consiga recuperar os dados
-    const s = { id: sub, nome: "-", role, incompleto: true };
-    setSessao(s);
-    return s;
-  }
+    sessionStorage.clear();
 }
 
-// Verifica se o usuário está autenticado antes de acessar uma página
+// =====================================================
+// SAIR DO SISTEMA
+// =====================================================
+
+export function logout() {
+    clearAuth();
+    window.location.replace("index.html");
+}
+
+// =====================================================
+// RECUPERAR SESSÃO
+// =====================================================
+
+export function getSessao() {
+    try {
+        return JSON.parse(
+            localStorage.getItem(K.sessao) || "null"
+        );
+    } catch {
+        return null;
+    }
+}
+
+// =====================================================
+// SALVAR SESSÃO
+// =====================================================
+
+export function setSessao(s) {
+    localStorage.setItem(
+        K.sessao,
+        JSON.stringify(s)
+    );
+}
+
+// =====================================================
+// DECODIFICAR TOKEN JWT
+// =====================================================
+
+export function parseJwt(t) {
+    try {
+
+        if (!t || typeof t !== "string") {
+            return null;
+        }
+
+        const partes = t.split(".");
+
+        if (partes.length !== 3 || !partes[1]) {
+            return null;
+        }
+
+        // Utiliza a segunda parte do JWT (payload).
+        const payload = partes[1];
+
+        // Converte Base64URL para Base64.
+        const base64 = payload
+            .replace(/-/g, "+")
+            .replace(/_/g, "/");
+
+        // Corrige o preenchimento do Base64.
+        const padded = base64.padEnd(
+            Math.ceil(base64.length / 4) * 4,
+            "="
+        );
+
+        // Decodifica corretamente caracteres UTF-8.
+        const binary = atob(padded);
+
+        const bytes = Uint8Array.from(
+            binary,
+            c => c.charCodeAt(0)
+        );
+
+        const decoded = new TextDecoder().decode(bytes);
+
+        return JSON.parse(decoded);
+
+    } catch {
+        return null;
+    }
+}
+
+// =====================================================
+// VERIFICAR EXPIRAÇÃO DO TOKEN
+// =====================================================
+
+export function isTokenExpired(t) {
+
+    const claims = parseJwt(t);
+
+    if (!claims || !claims.exp) {
+        return true;
+    }
+
+    return Date.now() >= Number(claims.exp) * 1000;
+}
+
+// =====================================================
+// REQUISIÇÕES PARA A API
+// =====================================================
+
+export async function apiFetch(path, opts = {}) {
+
+    // Prepara os cabeçalhos.
+    const headers = {};
+
+    // Recupera o token.
+    const tk = getToken();
+
+    // Verifica se o token existe e se ainda é válido.
+    if (tk) {
+
+        if (isTokenExpired(tk)) {
+            clearAuth();
+
+            const atual = window.location.pathname
+                .split("/")
+                .pop();
+
+            if (atual !== "index.html" && atual !== "") {
+                window.location.replace("index.html");
+            }
+
+            throw new Error(
+                "Sessão expirada. Faça login novamente."
+            );
+        }
+
+        headers["Authorization"] = "Bearer " + tk;
+    }
+
+    // Não define Content-Type para FormData.
+    if (!(opts.body instanceof FormData)) {
+        headers["Content-Type"] = "application/json";
+    }
+
+    // Adiciona cabeçalhos personalizados.
+    Object.assign(headers, opts.headers || {});
+
+    // Executa a requisição.
+    const res = await fetch(
+        CONFIG.API_BASE + path,
+        {
+            ...opts,
+            headers
+        }
+    );
+
+    // Verifica autenticação.
+    if (res.status === 401) {
+
+        clearAuth();
+
+        const atual = window.location.pathname
+            .split("/")
+            .pop();
+
+        if (atual !== "index.html" && atual !== "") {
+            window.location.replace("index.html");
+        }
+
+        throw new Error(
+            "Sessão expirada. Faça login novamente."
+        );
+    }
+
+    // Verifica erros retornados pelo backend.
+    if (!res.ok) {
+
+        let msg = `Erro ${res.status}`;
+
+        try {
+
+            const j = await res.json();
+
+            msg =
+                j.response ||
+                j.message ||
+                j.error ||
+                msg;
+
+        } catch {
+            // Resposta sem JSON.
+        }
+
+        throw new Error(msg);
+    }
+
+    // Resposta sem conteúdo.
+    if (res.status === 204) {
+        return null;
+    }
+
+    // Recupera o conteúdo.
+    const text = await res.text();
+
+    if (!text) {
+        return null;
+    }
+
+    // Converte JSON quando possível.
+    try {
+        return JSON.parse(text);
+    } catch {
+        return text;
+    }
+}
+
+// =====================================================
+// RESTAURAR SESSÃO DO USUÁRIO
+// =====================================================
+
+export async function bootstrapSessao() {
+
+    // Recupera o token.
+    const tk = getToken();
+
+    // Verifica se existe autenticação.
+    if (!tk || isTokenExpired(tk)) {
+        clearAuth();
+        return null;
+    }
+
+    // Recupera a sessão armazenada.
+    const atual = getSessao();
+
+    // Evita novas consultas quando a sessão já está completa.
+    if (
+        atual &&
+        atual.id &&
+        (
+            atual.pacienteId ||
+            atual.crm
+        )
+    ) {
+        return atual;
+    }
+
+    // Decodifica os dados do token.
+    const claims = parseJwt(tk);
+
+    if (!claims) {
+        clearAuth();
+        return null;
+    }
+
+    // Recupera identificação e perfil.
+    const role = claims.role;
+    const sub = claims.sub;
+
+    if (!role || !sub) {
+        clearAuth();
+        return null;
+    }
+
+    try {
+
+        // =================================================
+        // SESSÃO DO PACIENTE
+        // =================================================
+
+        if (role === "CLIENTE") {
+
+            // Recupera o CPF do token.
+            const cpf = claims.cpf || sub;
+
+            // Busca o paciente no backend.
+            const p = await apiFetch(
+                `/pac/usuario/${encodeURIComponent(cpf)}`
+            );
+
+            if (!p || p.id == null) {
+                throw new Error(
+                    "Não foi possível recuperar os dados do paciente."
+                );
+            }
+
+            // Armazena o ID do paciente.
+            localStorage.setItem(
+                K.pacienteId,
+                String(p.id)
+            );
+
+            // Armazena o CPF.
+            localStorage.setItem(
+                K.pacienteCpf,
+                cpf
+            );
+
+            // Monta a sessão.
+            const s = {
+
+                id: cpf,
+
+                cpf: cpf,
+
+                nome:
+                    p.usuario?.nome ||
+                    p.nome ||
+                    claims.nome ||
+                    "Paciente",
+
+                role: role,
+
+                pacienteId: p.id
+
+            };
+
+            setSessao(s);
+
+            return s;
+        }
+
+        // =================================================
+        // SESSÃO DO FUNCIONÁRIO / MÉDICO
+        // =================================================
+
+        const matricula = claims.matricula || sub;
+
+        // Busca o funcionário pelo identificador.
+        const m = await apiFetch(
+            `/med/funcionario/${encodeURIComponent(matricula)}`
+        );
+
+        if (!m || !m.crm) {
+            throw new Error(
+                "Não foi possível recuperar os dados do funcionário."
+            );
+        }
+
+        // Armazena o CRM.
+        localStorage.setItem(
+            K.medicoCrm,
+            String(m.crm)
+        );
+
+        // Monta a sessão.
+        const s = {
+
+            id: matricula,
+
+            matricula: matricula,
+
+            cpf:
+                claims.cpf ||
+                m.funcionario?.usuario?.cpf ||
+                "",
+
+            nome:
+                m.funcionario?.usuario?.nome ||
+                m.funcionario?.nome ||
+                claims.nome ||
+                m.crm,
+
+            role: role,
+
+            crm: m.crm
+
+        };
+
+        setSessao(s);
+
+        return s;
+
+    } catch (error) {
+
+        // Não cria uma sessão aparentemente válida
+        // quando não consegue confirmar os dados no backend.
+        console.error(
+            "Erro ao restaurar sessão:",
+            error
+        );
+
+        return null;
+    }
+}
+
+// =====================================================
+// PROTEGER PÁGINAS DO SISTEMA
+// =====================================================
+
 export async function requireLogin() {
-  const s = await bootstrapSessao();
 
-  // Redireciona para a página inicial se não houver sessão válida
-  if (!s) { 
-    window.location.replace("index.html"); 
-    return null; 
-  }
+    const s = await bootstrapSessao();
 
-  return s;
+    // Impede acesso sem sessão válida.
+    if (!s) {
+
+        window.location.replace("index.html");
+
+        return null;
+    }
+
+    return s;
 }

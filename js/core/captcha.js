@@ -1,50 +1,61 @@
-// Importa as configurações do sistema
-import { CONFIG } from "./config.js";
+(function () {
+  const HCAPTCHA_SITEKEY = window.MEDTRIAGE_HCAPTCHA_SITEKEY || '10000000-ffff-ffff-ffff-000000000001';
+  const widgets = new Map();
 
-// Obtém o token de resposta do CAPTCHA
-export function getCaptchaToken() {
-  // Retorna vazio se o CAPTCHA estiver desativado
-  if (!CONFIG.CAPTCHA_ENABLED) return "";
-
-  // Verifica se o hCaptcha está disponível
-  if (typeof hcaptcha !== "undefined" && typeof hcaptcha.getResponse === "function") {
-    return hcaptcha.getResponse() || "";
+  function loadHCaptchaScript() {
+    if (document.querySelector('script[src*="://hcaptcha.com"]')) return;
+    const script = document.createElement('script');
+    script.src = 'https://js.://hcaptcha.com?render=explicit&onload=onMedTriageHCaptchaLoad';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
   }
 
-  return "";
-}
+  window.onMedTriageHCaptchaLoad = function () {
+    document.querySelectorAll('[data-captcha]').forEach((el) => {
+      if (widgets.has(el)) return;
+      const widgetId = window.hcaptcha.render(el, {
+        sitekey: el.getAttribute('data-sitekey') || HCAPTCHA_SITEKEY,
+        'expired-callback': () => {
+          el.dataset.captchaToken = '';
+        },
+        'error-callback': () => {
+          el.dataset.captchaToken = '';
+        },
+        callback: (token) => {
+          el.dataset.captchaToken = token;
+        }
+      });
+      widgets.set(el, widgetId);
+    });
+  };
 
-// Exibe e configura os campos de CAPTCHA na página
-export function renderCaptchaWidgets() {
-  // Não executa a configuração se o CAPTCHA estiver desativado
-  if (!CONFIG.CAPTCHA_ENABLED) return;
+  function getCaptchaToken(formElement) {
+    const container = (formElement || document).querySelector('[data-captcha]');
+    if (!container) return '';
+    if (window.hcaptcha && widgets.has(container)) {
+      return window.hcaptcha.getResponse(widgets.get(container)) || '';
+    }
+    return container.dataset.captchaToken || '';
+  }
 
-  // Localiza os elementos que possuem o atributo data-captcha
-  document.querySelectorAll("[data-captcha]").forEach(el => {
-    el.style.display = "block";
+  function resetCaptcha(formElement) {
+    const container = (formElement || document).querySelector('[data-captcha]');
+    if (!container) return;
+    container.dataset.captchaToken = '';
+    if (window.hcaptcha && widgets.has(container)) {
+      window.hcaptcha.reset(widgets.get(container));
+    }
+  }
 
-    // Insere o componente do hCaptcha no elemento
-    el.innerHTML = `<div class="h-captcha" data-sitekey="${CONFIG.CAPTCHA_SITEKEY}"></div>`;
+  document.addEventListener('DOMContentLoaded', () => {
+    if (document.querySelector('[data-captcha]')) {
+      loadHCaptchaScript();
+    }
   });
 
-  // Verifica se o script do hCaptcha já foi carregado
-  if (!document.querySelector('script[src*="hcaptcha.com"]')) {
-    const s = document.createElement("script");
-
-    // Define o endereço do script do hCaptcha
-    s.src = "https://js.hcaptcha.com/1/api.js";
-
-    // Carrega o script de forma assíncrona
-    s.async = true;
-    s.defer = true;
-
-    // Adiciona o script ao documento HTML
-    document.head.appendChild(s);
-  }
-}
-
-// Reinicia o CAPTCHA para permitir uma nova verificação
-export function resetCaptcha() {
-  // Verifica se o hCaptcha está disponível antes de reiniciar
-  if (typeof hcaptcha !== "undefined" && hcaptcha.reset) hcaptcha.reset();
-}
+  window.MedTriageCaptcha = {
+    getToken: getCaptchaToken,
+    reset: resetCaptcha
+  };
+})();

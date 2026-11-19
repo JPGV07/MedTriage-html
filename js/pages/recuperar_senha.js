@@ -1,96 +1,188 @@
-// Importa funções auxiliares para buscar elementos e formatar CPF
+
 import { $, mascararCPF } from "../core/utils.js";
-
-// Importa a função de comunicação com a API
+import { validarCPF } from "../core/validators.js";
 import { apiFetch } from "../core/auth.js";
-
-// Importa a inicialização das configurações comuns
 import { initCommon } from "../core/init.js";
 
-// Inicializa as configurações comuns da página
+// Inicializa os recursos compartilhados.
 initCommon();
 
-// Busca o formulário de recuperação de senha
 const form = $("recuperar-form");
 
 if (form) {
-  // Recupera o perfil selecionado para a recuperação de senha
+  // Recupera o perfil selecionado na tela anterior.
   const perfil = localStorage.getItem("@medtriage/reset-perfil") || "paciente";
 
-  // Busca o campo de identificação e seu rótulo
+  const profissional = perfil === "profissional";
+
+  // Recupera os elementos do formulário.
   const label = $("label-recuperar-id");
   const input = $("input-recuperar-id");
+  const novaSenha = $("nova-senha-recuperar");
+  const repetirSenha = $("repetir-senha-recuperar");
+  const botao = form.querySelector('[type="submit"]');
 
-  // Configura os campos para recuperação de senha do profissional
-  if (perfil === "profissional") {
-    // Aplica o tema visual profissional
-    document.body.classList.add("theme-professional");
-
-    // Altera o campo de identificação para matrícula
-    if (label) label.textContent = "Matrícula";
-
-    if (input) {
-      // Define o texto de orientação do campo
-      input.placeholder = "Digite sua matrícula";
-
-      // Permite apenas letras e números na matrícula
-      input.addEventListener("input", (e) => {
-        e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-      });
-    }
-
-  } else {
-    // Configura os campos para recuperação de senha do paciente
-    if (label) label.textContent = "CPF";
-
-    if (input) {
-      // Aplica a máscara de CPF enquanto o usuário digita
-      input.addEventListener("input", (e) => {
-        e.target.value = mascararCPF(e.target.value);
-      });
-    }
+  // Verifica se os elementos obrigatórios existem.
+  if (!input || !novaSenha || !repetirSenha) {
+    console.error("Campos obrigatórios da recuperação de senha não encontrados.");
+    return;
   }
 
-  // Processa o envio do formulário de recuperação
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  // Configura o campo de identificação conforme o perfil.
+  if (profissional) {
+    document.body.classList.add("theme-professional");
 
-    // Recupera os dados informados pelo usuário
-    const id = input.value.trim();
-    const nova = $("nova-senha-recuperar").value;
-    const repetir = $("repetir-senha-recuperar").value;
+    if (label) {
+      label.textContent = "Matrícula";
+    }
 
-    // Verifica se as duas senhas são iguais
-    if (nova !== repetir) return alert("As senhas não coincidem.");
+    input.placeholder = "Digite sua matrícula (ex: MED001)";
+    input.removeAttribute("maxlength");
+    input.setAttribute("autocomplete", "username");
 
-    // Verifica se a nova senha possui pelo menos seis caracteres
-    if (nova.length < 6) return alert("Senha curta.");
+    // Permite somente letras e números.
+    input.addEventListener("input", (e) => {
+      e.target.value = e.target.value
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toUpperCase();
+    });
 
-    try {
-      // Verifica se a recuperação foi solicitada por um profissional
-      if (perfil === "profissional") {
-        alert("Reset por matrícula ainda não disponível. Contate o suporte.");
+  } else {
+    if (label) {
+      label.textContent = "CPF";
+    }
+
+    input.placeholder = "000.000.000-00";
+    input.setAttribute("maxlength", "14");
+    input.setAttribute("inputmode", "numeric");
+    input.setAttribute("autocomplete", "off");
+
+    // Aplica a máscara e impede letras, inclusive em conteúdos colados.
+    input.addEventListener("input", (e) => {
+      const numeros = e.target.value.replace(/\D/g, "").slice(0, 11);
+      e.target.value = mascararCPF(numeros);
+    });
+
+    // Bloqueia caracteres que não sejam números durante a digitação.
+    input.addEventListener("keydown", (e) => {
+      const teclasPermitidas = [
+        "Backspace",
+        "Delete",
+        "Tab",
+        "ArrowLeft",
+        "ArrowRight",
+        "Home",
+        "End"
+      ];
+
+      if (
+        teclasPermitidas.includes(e.key) ||
+        e.ctrlKey ||
+        e.metaKey
+      ) {
         return;
       }
 
-      // Envia a nova senha do paciente para o backend
-      await apiFetch("/users", {
-        method: "PUT",
-        body: JSON.stringify({ cpf: id, senha: nova }),
+      if (!/^\d$/.test(e.key)) {
+        e.preventDefault();
+      }
+    });
+  }
+
+  // Processa o formulário de recuperação.
+  let enviando = false;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (enviando) return;
+
+    // Recupera e normaliza os dados informados.
+    let identificador = input.value.trim();
+
+    const senha = novaSenha.value;
+    const repetir = repetirSenha.value;
+
+    if (profissional) {
+      identificador = identificador
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toUpperCase();
+    } else {
+      identificador = identificador.replace(/\D/g, "");
+    }
+
+    // Verifica o identificador.
+    if (!identificador) {
+      alert(
+        profissional
+          ? "Informe sua matrícula."
+          : "Informe seu CPF."
+      );
+      input.focus();
+      return;
+    }
+
+    // Valida o CPF.
+    if (!profissional && !validarCPF(identificador)) {
+      alert("Informe um CPF válido.");
+      input.focus();
+      return;
+    }
+
+    // Verifica o tamanho da senha.
+    if (senha.length < 8) {
+      alert("A nova senha deve ter no mínimo 8 caracteres.");
+      novaSenha.focus();
+      return;
+    }
+
+    // Verifica se as senhas coincidem.
+    if (senha !== repetir) {
+      alert("As senhas não coincidem.");
+      repetirSenha.focus();
+      return;
+    }
+
+    enviando = true;
+
+    if (botao) {
+      botao.disabled = true;
+      botao.textContent = "Redefinindo senha...";
+    }
+
+    try {
+      // Envia a solicitação de recuperação ao backend.
+      await apiFetch("/users/recuperar-senha", {
+        method: "POST",
+        body: JSON.stringify({
+          identificador: identificador,
+          senha: senha
+        })
       });
 
-      // Remove o perfil salvo após a recuperação
+      // Remove o perfil temporário após o sucesso.
       localStorage.removeItem("@medtriage/reset-perfil");
 
-      // Informa que a senha foi alterada
-      alert("Senha redefinida! Faça login.");
+      alert("Senha redefinida com sucesso! Faça login.");
 
-      // Redireciona para a página inicial de login
+      // Retorna à página de login.
       window.location.href = "index.html";
 
-    } catch (err) {
-      // Exibe a mensagem de erro caso a recuperação falhe
-      alert(err.message);
+    } catch (erro) {
+      console.error("Erro na recuperação de senha:", erro);
+
+      alert(
+        erro.message ||
+        "Não foi possível redefinir sua senha. Tente novamente."
+      );
+
+      // Libera o formulário para uma nova tentativa.
+      enviando = false;
+
+      if (botao) {
+        botao.disabled = false;
+        botao.textContent = "Redefinir senha";
+      }
     }
   });
 }
